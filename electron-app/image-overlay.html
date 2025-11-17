@@ -122,6 +122,7 @@
     <div class="click-through-indicator" id="clickThroughIndicator">Click-through: ON</div>
   </div>
 
+  <script src="config.js"></script>
   <script>
     const { ipcRenderer } = require('electron');
     const io = require('socket.io-client');
@@ -130,7 +131,7 @@
     let session = null;
     let settings = null;
 
-    const WS_URL = process.env.WS_URL || 'http://localhost:3001';
+    const WS_URL = (window.APP_CONFIG && window.APP_CONFIG.WS_URL) || 'http://localhost:3001';
 
     // Initialize
     ipcRenderer.on('init-overlay', (event, data) => {

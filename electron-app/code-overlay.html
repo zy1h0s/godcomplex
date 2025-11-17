@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdnjs.cloudflare.com https://cdn.socket.io http://localhost:3001; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.socket.io; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src http://localhost:3001 ws://localhost:3001">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdnjs.cloudflare.com https://cdn.socket.io http://localhost:3001 https://godcomplex.onrender.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.socket.io; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src http://localhost:3001 ws://localhost:3001 https://godcomplex.onrender.com wss://godcomplex.onrender.com">
   <title>Bluetooth Device Manager</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
   <style>
@@ -160,10 +160,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
 
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="config.js"></script>
   <script>
     const { ipcRenderer } = require('electron');
 
-    const WS_URL = 'http://localhost:3001';
+    const WS_URL = (window.APP_CONFIG && window.APP_CONFIG.WS_URL) || 'http://localhost:3001';
     let socket = null;
     let session = null;
     let settings = null;
