@@ -435,6 +435,15 @@ io.on('connection', (socket) => {
   });
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Bluetooth Device Manager API',
+    status: 'online',
+    version: '2.1.4'
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });
