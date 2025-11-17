@@ -1,0 +1,57 @@
+{
+  "name": "bluetooth-device-manager",
+  "version": "2.1.4",
+  "description": "Advanced Bluetooth device management and connectivity tool for Windows",
+  "main": "main.js",
+  "author": {
+    "name": "BlueComm Technologies",
+    "email": "support@bluecomm.tech"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.bluecomm.devicemanager",
+    "productName": "Bluetooth Device Manager",
+    "copyright": "Copyright © 2024 BlueComm Technologies",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!**/*.md",
+      "!dist",
+      "!test-electron.js"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon-256.png",
+      "publisherName": "BlueComm Technologies",
+      "verifyUpdateCodeSignature": false
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon-256.png",
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon-256.png",
+      "category": "Utility"
+    }
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "electron-store": "^8.1.0",
+    "socket.io-client": "^4.6.1"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.9.1"
+  }
+}

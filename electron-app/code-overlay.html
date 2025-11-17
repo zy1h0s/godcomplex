@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdnjs.cloudflare.com https://cdn.socket.io http://localhost:3001; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.socket.io; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src http://localhost:3001 ws://localhost:3001">
+  <title>Bluetooth Device Manager</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      background: transparent;
+    }
+
+    #titlebar {
+      width: 100%;
+      height: 28px;
+      background: rgba(0, 0, 0, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      -webkit-app-region: drag;
+    }
+
+    .title {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    #controls {
+      display: flex;
+      gap: 4px;
+      -webkit-app-region: no-drag;
+    }
+
+    .control-btn {
+      width: 20px;
+      height: 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      transition: all 0.2s;
+      font-weight: bold;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    #container {
+      width: 100%;
+      height: calc(100% - 28px);
+      padding: 20px;
+    }
+
+    body.minimized #container {
+      display: none;
+    }
+
+    body.minimized #titlebar {
+      height: 100%;
+      border-bottom: none;
+    }
+
+    #code-display {
+      width: 100%;
+      height: 100%;
+      background: rgba(30, 30, 30, 0.95);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      overflow: auto;
+      -webkit-app-region: no-drag;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    }
+
+    pre {
+      margin: 0 !important;
+      background: transparent !important;
+      padding: 0 !important;
+      font-size: 14px;
+      line-height: 1.5;
+      font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    }
+
+    code {
+      background: transparent !important;
+      padding: 0 !important;
+      font-family: inherit;
+      text-shadow: none !important;
+    }
+
+    /* Scrollbar styling */
+    #code-display::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    #code-display::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    #code-display::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    #code-display::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Empty state */
+    .empty {
+      color: rgba(255, 255, 255, 0.3);
+      font-style: italic;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="titlebar">
+    <span class="title">CODE</span>
+    <div id="controls">
+      <button class="control-btn" onclick="openSettings()" title="Settings">⚙</button>
+      <button class="control-btn" onclick="toggleMinimize()" title="Minimize/Restore" id="minimizeBtn">−</button>
+      <button class="control-btn" onclick="closeWindow()" title="Close">×</button>
+    </div>
+  </div>
+  <div id="container">
+    <div id="code-display">
+      <pre><code id="code" class="language-javascript"></code></pre>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-ruby.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    const WS_URL = 'http://localhost:3001';
+    let socket = null;
+    let session = null;
+    let settings = null;
+
+    const codeElement = document.getElementById('code');
+    const codeDisplay = document.getElementById('code-display');
+
+    // Initialize overlay
+    ipcRenderer.on('init-overlay', (event, data) => {
+      session = data.session;
+      settings = data.settings;
+
+      // Apply settings
+      if (settings) {
+        const opacity = settings.bgOpacity || 0.95;
+        codeDisplay.style.background = `rgba(30, 30, 30, ${opacity})`;
+      }
+
+      // Connect to WebSocket
+      connectSocket();
+    });
+
+    function connectSocket() {
+      socket = io(WS_URL, {
+        transports: ['websocket', 'polling']
+      });
+
+      socket.on('connect', () => {
+        console.log('Code overlay connected to WebSocket');
+        if (session) {
+          socket.emit('join-session', {
+            sessionId: session.id,
+            userId: session.userId || 'viewer',
+            username: 'Viewer'
+          });
+        }
+      });
+
+      socket.on('session-data', ({ text, code, imageUrl }) => {
+        updateCode(code || '');
+      });
+
+      socket.on('code-update', ({ code }) => {
+        updateCode(code);
+      });
+
+      socket.on('disconnect', () => {
+        console.log('Code overlay disconnected');
+      });
+    }
+
+    function updateCode(code) {
+      if (code && code.trim()) {
+        codeElement.textContent = code;
+        // Ensure Prism is loaded before highlighting
+        if (window.Prism) {
+          Prism.highlightElement(codeElement);
+        } else {
+          // Fallback: apply basic formatting
+          codeElement.style.color = '#ffffff';
+        }
+      } else {
+        codeElement.innerHTML = '<span class="empty">No code</span>';
+      }
+    }
+
+    // Rehighlight when Prism loads
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (codeElement.textContent && window.Prism) {
+          Prism.highlightElement(codeElement);
+        }
+      }, 500);
+    });
+
+    function openSettings() {
+      ipcRenderer.send('open-settings');
+    }
+
+    function toggleMinimize() {
+      ipcRenderer.send('toggle-minimize', 'code');
+    }
+
+    function closeWindow() {
+      window.close();
+    }
+
+    // Handle minimize state
+    ipcRenderer.on('minimized-state', (event, isMinimized) => {
+      if (isMinimized) {
+        document.body.classList.add('minimized');
+        document.getElementById('minimizeBtn').textContent = '□';
+      } else {
+        document.body.classList.remove('minimized');
+        document.getElementById('minimizeBtn').textContent = '−';
+      }
+    });
+
+    // Handle click-through toggle
+    ipcRenderer.on('click-through-changed', (event, enabled) => {
+      console.log('Code overlay click-through:', enabled);
+    });
+  </script>
+</body>
+</html>
