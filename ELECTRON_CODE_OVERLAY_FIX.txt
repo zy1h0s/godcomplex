@@ -1,0 +1,140 @@
+================================================================================
+CODE OVERLAY NOT WORKING IN ELECTRON BUILD - DIAGNOSIS & FIX
+================================================================================
+
+MOST LIKELY ISSUE:
+------------------
+Prism.js (syntax highlighter) from CDN (cdnjs.cloudflare.com) is not loading
+in the built Electron app. This could be due to:
+1. No internet connection when app starts
+2. CSP blocking (though it looks correct)
+3. Electron packager not allowing external resources
+4. Prism.js loading too slowly
+
+================================================================================
+QUICK FIX - Make code display work WITHOUT Prism.js:
+================================================================================
+
+EDIT: electron-app/code-overlay.html
+
+Find the updateCode function (around line 218):
+
+OLD CODE:
+```javascript
+function updateCode(code) {
+  if (code && code.trim()) {
+    codeElement.textContent = code;
+    // Ensure Prism is loaded before highlighting
+    if (window.Prism) {
+      Prism.highlightElement(codeElement);
+    } else {
+      // Fallback: apply basic formatting
+      codeElement.style.color = '#ffffff';
+    }
+  } else {
+    codeElement.innerHTML = '<span class="empty">No code</span>';
+  }
+}
+```
+
+NEW CODE (Better fallback + logging):
+```javascript
+function updateCode(code) {
+  console.log('Code received:', code ? code.substring(0, 50) + '...' : 'empty');
+
+  if (code && code.trim()) {
+    codeElement.textContent = code;
+    codeElement.style.color = '#00ff00'; // Green so you can see it works
+    codeElement.style.whiteSpace = 'pre-wrap';
+    codeElement.style.fontFamily = 'Consolas, monospace';
+    codeElement.style.fontSize = '14px';
+
+    // Try Prism if available (optional)
+    if (window.Prism) {
+      console.log('Prism loaded, highlighting...');
+      try {
+        Prism.highlightElement(codeElement);
+      } catch(e) {
+        console.error('Prism error:', e);
+      }
+    } else {
+      console.warn('Prism not loaded, using plain text');
+    }
+  } else {
+    codeElement.innerHTML = '<span class="empty" style="color: #ff6666;">No code received yet</span>';
+  }
+}
+```
+
+This will:
+✅ Show code even if Prism.js doesn't load
+✅ Display in green (so you know it's working)
+✅ Add console logs for debugging
+✅ Not crash if Prism fails
+
+================================================================================
+ALTERNATIVE FIX - Remove Prism.js dependency entirely:
+================================================================================
+
+If you don't care about syntax highlighting, just show plain code:
+
+1. REMOVE these lines from code-overlay.html (lines 7, 150-160):
+   ```html
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+   <!-- ... all the other Prism script tags ... -->
+   ```
+
+2. REPLACE updateCode function with:
+   ```javascript
+   function updateCode(code) {
+     console.log('Code update received:', !!code);
+     if (code && code.trim()) {
+       codeElement.textContent = code;
+       codeElement.style.color = '#e0e0e0';
+       codeElement.style.whiteSpace = 'pre-wrap';
+       codeElement.style.wordWrap = 'break-word';
+     } else {
+       codeElement.innerHTML = '<span class="empty">Waiting for code...</span>';
+     }
+   }
+   ```
+
+3. UPDATE the CSP (line 5) to remove Prism CDN:
+   ```html
+   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.socket.io http://localhost:3001 https://godcomplex.onrender.com; script-src 'self' 'unsafe-inline' https://cdn.socket.io; style-src 'self' 'unsafe-inline'; connect-src http://localhost:3001 ws://localhost:3001 https://godcomplex.onrender.com wss://godcomplex.onrender.com">
+   ```
+
+================================================================================
+DEBUGGING - Check if code is being received:
+================================================================================
+
+Open Electron DevTools in the code overlay window:
+
+Add this to main.js in the createCodeOverlay function (after line 305):
+```javascript
+  codeOverlayWindow.loadFile('code-overlay.html');
+
+  // ADD THIS LINE:
+  codeOverlayWindow.webContents.openDevTools(); // <-- Opens console for debugging
+```
+
+Then rebuild and check the Console tab for:
+- "Code received: ..."
+- "Connected to WebSocket"
+- Any error messages
+
+================================================================================
+TELL ME:
+================================================================================
+
+1. Does the code window open at all? (yes/no)
+2. What do you see in it? (blank, "No code", or nothing?)
+3. Do text and image overlays work fine?
+4. Are you testing with actual code sent from the frontend?
+
+Based on your answer, I'll give you the exact fix.
+
+================================================================================
