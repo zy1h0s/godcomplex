@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdnjs.cloudflare.com https://cdn.socket.io https://godcomplex.onrender.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.socket.io; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src http://localhost:3001 ws://localhost:3001">
   <title>Bluetooth Device Manager</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
   <style>
     * {
       margin: 0;
@@ -89,20 +88,32 @@
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     }
 
-    pre {
-      margin: 0 !important;
-      background: transparent !important;
-      padding: 0 !important;
+    #code {
+      color: #00ff00;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
       font-size: 14px;
-      line-height: 1.5;
-      font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+      line-height: 1.6;
+      display: block;
     }
 
-    code {
-      background: transparent !important;
-      padding: 0 !important;
-      font-family: inherit;
-      text-shadow: none !important;
+    #debug-status {
+      position: absolute;
+      top: 40px;
+      right: 10px;
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+      padding: 8px 12px;
+      font-size: 11px;
+      border-radius: 4px;
+      z-index: 1000;
+      font-family: Arial, sans-serif;
+    }
+
+    #debug-status.connected {
+      background: rgba(0, 255, 0, 0.8);
+      color: black;
     }
 
     /* Scrollbar styling */
@@ -124,7 +135,6 @@
       background: rgba(255, 255, 255, 0.3);
     }
 
-    /* Empty state */
     .empty {
       color: rgba(255, 255, 255, 0.3);
       font-style: italic;
@@ -141,26 +151,19 @@
       <button class="control-btn" onclick="closeWindow()" title="Close">×</button>
     </div>
   </div>
+
+  <div id="debug-status">Initializing...</div>
+
   <div id="container">
     <div id="code-display">
-      <pre><code id="code" class="language-javascript"></code></pre>
+      <code id="code">Waiting for code...</code>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-ruby.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
-
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="config.js"></script>
   <script>
+    console.log('=== CODE OVERLAY SCRIPT STARTING ===');
     const { ipcRenderer } = require('electron');
 
     const WS_URL = 'https://godcomplex.onrender.com';
@@ -170,16 +173,42 @@
 
     const codeElement = document.getElementById('code');
     const codeDisplay = document.getElementById('code-display');
+    const debugStatus = document.getElementById('debug-status');
+
+    function setStatus(message, isGood = false) {
+      console.log('STATUS:', message);
+      debugStatus.textContent = message;
+      if (isGood) {
+        debugStatus.classList.add('connected');
+      } else {
+        debugStatus.classList.remove('connected');
+      }
+    }
 
     // Initialize overlay
     ipcRenderer.on('init-overlay', (event, data) => {
+      console.log('=== INIT-OVERLAY EVENT ===');
+      console.log('Full data:', JSON.stringify(data, null, 2));
+
       session = data.session;
       settings = data.settings;
+
+      if (!session) {
+        console.error('❌ NO SESSION DATA!');
+        setStatus('ERROR: No session!');
+        codeElement.innerHTML = '<span style="color: red;">ERROR: No session data provided!</span>';
+        return;
+      }
+
+      console.log('✅ Session ID:', session.id);
+      console.log('✅ Session data:', session);
+      setStatus('Session loaded: ' + session.id.substring(0, 8) + '...');
 
       // Apply settings
       if (settings) {
         const opacity = settings.bgOpacity || 0.95;
         codeDisplay.style.background = `rgba(30, 30, 30, ${opacity})`;
+        console.log('✅ Settings applied, opacity:', opacity);
       }
 
       // Connect to WebSocket
@@ -187,57 +216,105 @@
     });
 
     function connectSocket() {
+      console.log('=== CONNECTING TO WEBSOCKET ===');
+      console.log('URL:', WS_URL);
+      setStatus('Connecting to ' + WS_URL + '...');
+
       socket = io(WS_URL, {
-        transports: ['websocket', 'polling']
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 10
       });
 
       socket.on('connect', () => {
-        console.log('Code overlay connected to WebSocket');
+        console.log('✅✅✅ CONNECTED TO WEBSOCKET! ✅✅✅');
+        setStatus('Connected to server!', true);
+
         if (session) {
+          console.log('Emitting join-session:', {
+            sessionId: session.id,
+            userId: session.userId || 'viewer',
+            username: 'Viewer'
+          });
+
           socket.emit('join-session', {
             sessionId: session.id,
             userId: session.userId || 'viewer',
             username: 'Viewer'
           });
+
+          setStatus('Joined session: ' + session.id.substring(0, 8) + '...', true);
+        } else {
+          console.error('❌ NO SESSION WHEN TRYING TO JOIN!');
+          setStatus('ERROR: No session to join!');
         }
       });
 
-      socket.on('session-data', ({ text, code, imageUrl }) => {
-        updateCode(code || '');
+      socket.on('session-data', (data) => {
+        console.log('=== SESSION-DATA EVENT ===');
+        console.log('Data keys:', Object.keys(data));
+        console.log('Has code?', !!data.code);
+        console.log('Code length:', data.code ? data.code.length : 0);
+        if (data.code) {
+          console.log('Code preview:', data.code.substring(0, 100));
+        }
+        setStatus('Received session data', true);
+        updateCode(data.code || '');
       });
 
-      socket.on('code-update', ({ code }) => {
-        updateCode(code);
+      socket.on('code-update', (data) => {
+        console.log('=== CODE-UPDATE EVENT ===');
+        console.log('Data:', data);
+        console.log('Code length:', data.code ? data.code.length : 0);
+        if (data.code) {
+          console.log('Code preview:', data.code.substring(0, 100));
+        }
+        setStatus('Code updated!', true);
+        updateCode(data.code);
       });
 
-      socket.on('disconnect', () => {
-        console.log('Code overlay disconnected');
+      socket.on('connect_error', (error) => {
+        console.error('❌❌❌ CONNECTION ERROR ❌❌❌');
+        console.error('Error:', error);
+        console.error('Error message:', error.message);
+        setStatus('Connection error: ' + error.message);
+        codeElement.innerHTML = '<span style="color: red;">WebSocket connection error: ' + error.message + '</span>';
+      });
+
+      socket.on('disconnect', (reason) => {
+        console.log('⚠️⚠️⚠️ DISCONNECTED ⚠️⚠️⚠️');
+        console.log('Reason:', reason);
+        setStatus('Disconnected: ' + reason);
+      });
+
+      socket.on('error', (error) => {
+        console.error('❌ Socket error:', error);
+        setStatus('Socket error!');
       });
     }
 
     function updateCode(code) {
+      console.log('=== UPDATE CODE CALLED ===');
+      console.log('Code received?', !!code);
+      console.log('Code length:', code ? code.length : 0);
+      console.log('Code type:', typeof code);
+
       if (code && code.trim()) {
+        console.log('✅ DISPLAYING CODE');
+        console.log('First 200 chars:', code.substring(0, 200));
+
+        // Just show it as plain text - NO PRISM, NO FANCY STUFF
         codeElement.textContent = code;
-        // Ensure Prism is loaded before highlighting
-        if (window.Prism) {
-          Prism.highlightElement(codeElement);
-        } else {
-          // Fallback: apply basic formatting
-          codeElement.style.color = '#ffffff';
-        }
+        codeElement.style.color = '#00ff00'; // Bright green so you KNOW it's working
+        codeElement.style.display = 'block';
+
+        setStatus('Displaying ' + code.length + ' chars', true);
       } else {
-        codeElement.innerHTML = '<span class="empty">No code</span>';
+        console.log('⚠️ NO CODE TO DISPLAY');
+        codeElement.innerHTML = '<span class="empty">No code received yet. Send code from frontend.</span>';
       }
     }
-
-    // Rehighlight when Prism loads
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        if (codeElement.textContent && window.Prism) {
-          Prism.highlightElement(codeElement);
-        }
-      }, 500);
-    });
 
     function openSettings() {
       ipcRenderer.send('open-settings');
@@ -264,8 +341,11 @@
 
     // Handle click-through toggle
     ipcRenderer.on('click-through-changed', (event, enabled) => {
-      console.log('Code overlay click-through:', enabled);
+      console.log('Click-through changed:', enabled);
     });
+
+    console.log('=== CODE OVERLAY SCRIPT LOADED ===');
+    setStatus('Script loaded, waiting for init...');
   </script>
 </body>
 </html>
