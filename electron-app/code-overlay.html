@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.socket.io http://localhost:3001 https://godcomplex.onrender.com; script-src 'self' 'unsafe-inline' https://cdn.socket.io; style-src 'self' 'unsafe-inline'; connect-src http://localhost:3001 ws://localhost:3001 https://godcomplex.onrender.com wss://godcomplex.onrender.com">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdnjs.cloudflare.com https://cdn.socket.io https://godcomplex.onrender.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.socket.io; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src http://localhost:3001 ws://localhost:3001">
   <title>Bluetooth Device Manager</title>
   <style>
     * {
@@ -166,9 +166,7 @@
     console.log('=== CODE OVERLAY SCRIPT STARTING ===');
     const { ipcRenderer } = require('electron');
 
-    const WS_URL = (window.APP_CONFIG && window.APP_CONFIG.WS_URL) || 'http://localhost:3001';
-    console.log('WebSocket URL:', WS_URL);
-
+    const WS_URL = 'https://godcomplex.onrender.com';
     let socket = null;
     let session = null;
     let settings = null;
