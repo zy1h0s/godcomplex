@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdnjs.cloudflare.com https://cdn.socket.io https://godcomplex.onrender.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.socket.io; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src http://localhost:3001 ws://localhost:3001">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' http://localhost:3001 https://godcomplex.onrender.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src http://localhost:3001 ws://localhost:3001 https://godcomplex.onrender.com wss://godcomplex.onrender.com">
   <title>Bluetooth Device Manager</title>
   <style>
     * {
@@ -160,13 +160,28 @@
     </div>
   </div>
 
-  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src="config.js"></script>
   <script>
     console.log('=== CODE OVERLAY SCRIPT STARTING ===');
     const { ipcRenderer } = require('electron');
 
-    const WS_URL = 'https://godcomplex.onrender.com';
+    // Use local socket.io-client module instead of CDN
+    let io;
+    try {
+      io = require('socket.io-client');
+      console.log('✅ Socket.IO loaded from node_modules');
+    } catch (error) {
+      console.error('❌❌❌ Socket.IO NOT LOADED! ❌❌❌');
+      console.error('Error:', error);
+      document.getElementById('debug-status').textContent = 'ERROR: Socket.IO not found!';
+      document.getElementById('debug-status').style.background = 'rgba(255, 0, 0, 0.9)';
+      document.getElementById('code').innerHTML = '<span style="color: red;">ERROR: Socket.IO module not found.<br><br>Error: ' + error.message + '</span>';
+    }
+
+    // Use config.js for URL, fallback to production URL
+    const WS_URL = (window.APP_CONFIG && window.APP_CONFIG.WS_URL) || 'https://godcomplex.onrender.com';
+    console.log('WebSocket URL:', WS_URL);
+    console.log('Config loaded?', !!window.APP_CONFIG);
     let socket = null;
     let session = null;
     let settings = null;
@@ -218,14 +233,30 @@
     function connectSocket() {
       console.log('=== CONNECTING TO WEBSOCKET ===');
       console.log('URL:', WS_URL);
+
+      // Check if Socket.IO is available
+      if (typeof io === 'undefined') {
+        console.error('❌ Cannot connect: Socket.IO not available!');
+        setStatus('ERROR: Socket.IO not loaded!');
+        codeElement.innerHTML = '<span style="color: red;">ERROR: Socket.IO library not loaded. Cannot connect to server.</span>';
+        return;
+      }
+
       setStatus('Connecting to ' + WS_URL + '...');
 
-      socket = io(WS_URL, {
-        transports: ['websocket', 'polling'],
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 10
-      });
+      try {
+        socket = io(WS_URL, {
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionDelay: 1000,
+          reconnectionAttempts: 10
+        });
+      } catch (error) {
+        console.error('❌ Error creating Socket.IO connection:', error);
+        setStatus('ERROR: ' + error.message);
+        codeElement.innerHTML = '<span style="color: red;">ERROR creating connection: ' + error.message + '</span>';
+        return;
+      }
 
       socket.on('connect', () => {
         console.log('✅✅✅ CONNECTED TO WEBSOCKET! ✅✅✅');
