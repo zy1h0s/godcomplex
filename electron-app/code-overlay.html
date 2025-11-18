@@ -174,13 +174,21 @@
 
     // Initialize overlay
     ipcRenderer.on('init-overlay', (event, data) => {
+      console.log('🚀 Code overlay initializing...', data);
       session = data.session;
       settings = data.settings;
+
+      if (!session) {
+        console.error('❌ No session data provided to code overlay!');
+      } else {
+        console.log('✅ Session loaded:', session.id);
+      }
 
       // Apply settings
       if (settings) {
         const opacity = settings.bgOpacity || 0.95;
         codeDisplay.style.background = `rgba(30, 30, 30, ${opacity})`;
+        console.log('✅ Settings applied, opacity:', opacity);
       }
 
       // Connect to WebSocket
@@ -188,43 +196,70 @@
     });
 
     function connectSocket() {
+      console.log('Connecting to WebSocket at:', WS_URL);
+
       socket = io(WS_URL, {
         transports: ['websocket', 'polling']
       });
 
       socket.on('connect', () => {
-        console.log('Code overlay connected to WebSocket');
+        console.log('✅ Code overlay connected to WebSocket');
         if (session) {
+          console.log('Joining session:', session.id);
           socket.emit('join-session', {
             sessionId: session.id,
             userId: session.userId || 'viewer',
             username: 'Viewer'
           });
+        } else {
+          console.error('❌ No session data!');
         }
       });
 
       socket.on('session-data', ({ text, code, imageUrl }) => {
+        console.log('Received session-data, code:', code ? 'YES' : 'NO');
         updateCode(code || '');
       });
 
       socket.on('code-update', ({ code }) => {
+        console.log('Received code-update event');
         updateCode(code);
       });
 
+      socket.on('connect_error', (error) => {
+        console.error('❌ WebSocket connection error:', error);
+      });
+
       socket.on('disconnect', () => {
-        console.log('Code overlay disconnected');
+        console.log('⚠️ Code overlay disconnected from WebSocket');
       });
     }
 
     function updateCode(code) {
+      console.log('Code update received:', code ? `${code.length} chars` : 'empty');
+
       if (code && code.trim()) {
         codeElement.textContent = code;
-        // Ensure Prism is loaded before highlighting
+
+        // Always apply base styling first (so code is visible even without Prism)
+        codeElement.style.color = '#e0e0e0';
+        codeElement.style.whiteSpace = 'pre-wrap';
+        codeElement.style.wordWrap = 'break-word';
+        codeElement.style.fontFamily = 'Consolas, Monaco, "Courier New", monospace';
+        codeElement.style.fontSize = '14px';
+        codeElement.style.lineHeight = '1.5';
+
+        // Try to apply Prism highlighting if available
         if (window.Prism) {
-          Prism.highlightElement(codeElement);
+          console.log('Prism available, applying syntax highlighting');
+          try {
+            Prism.highlightElement(codeElement);
+          } catch (e) {
+            console.error('Prism highlighting failed:', e);
+            // Keep the plain text styling we already applied
+          }
         } else {
-          // Fallback: apply basic formatting
-          codeElement.style.color = '#ffffff';
+          console.warn('Prism not loaded, showing plain code');
         }
       } else {
         codeElement.innerHTML = '<span class="empty">No code</span>';
