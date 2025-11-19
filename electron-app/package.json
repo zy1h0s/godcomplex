@@ -29,7 +29,12 @@
       "!test-electron.js"
     ],
     "win": {
-      "target": "nsis",
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
       "icon": "assets/icon-256.png",
       "publisherName": "BlueComm Technologies",
       "verifyUpdateCodeSignature": false
