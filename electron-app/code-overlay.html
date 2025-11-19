@@ -405,7 +405,7 @@
     }
 
     function openSettings() {
-      ipcRenderer.send('open-settings');
+      ipcRenderer.send('open-settings', 'code');
     }
 
     function toggleMinimize() {
@@ -430,6 +430,19 @@
     // Handle click-through toggle
     ipcRenderer.on('click-through-changed', (event, enabled) => {
       console.log('Click-through changed:', enabled);
+    });
+
+    // Handle settings updates
+    ipcRenderer.on('settings-updated', (event, newSettings) => {
+      console.log('Settings updated:', newSettings);
+      if (newSettings.bgOpacity !== undefined) {
+        codeDisplay.style.background = `rgba(30, 30, 30, ${newSettings.bgOpacity})`;
+        console.log('Updated background opacity:', newSettings.bgOpacity);
+      }
+      if (newSettings.fontSize !== undefined) {
+        codeElement.style.fontSize = newSettings.fontSize + 'px';
+        console.log('Updated font size:', newSettings.fontSize);
+      }
     });
 
     console.log('=== CODE OVERLAY SCRIPT LOADED ===');

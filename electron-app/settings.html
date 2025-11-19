@@ -220,6 +220,10 @@
       font-weight: 700;
     }
 
+    .hidden {
+      display: none;
+    }
+
     ::-webkit-scrollbar {
       width: 8px;
     }
@@ -236,58 +240,77 @@
 <body>
   <div class="settings-container">
     <div class="titlebar">
-      <h1>SETTINGS</h1>
+      <h1 id="windowTitle">TEXT SETTINGS</h1>
       <button class="close-btn" onclick="window.close()">×</button>
     </div>
 
     <div class="content">
-      <h2>Text Window</h2>
+      <!-- Text Window Settings -->
+      <div id="textSettings" class="hidden">
+        <h2>Text Window</h2>
 
-    <div class="form-group">
-      <label>Font Size: <span class="range-value" id="fontSizeValue">16px</span></label>
-      <input type="range" id="fontSize" min="10" max="48" value="16" oninput="updateValue('fontSize', 'px')">
-    </div>
+        <div class="form-group">
+          <label>Font Size: <span class="range-value" id="fontSizeValue">16px</span></label>
+          <input type="range" id="fontSize" min="10" max="48" value="16" oninput="updateValue('fontSize', 'px')">
+        </div>
 
-    <div class="form-group">
-      <label>Font Family:</label>
-      <select id="fontFamily">
-        <option value="Arial">Arial</option>
-        <option value="Helvetica">Helvetica</option>
-        <option value="Times New Roman">Times New Roman</option>
-        <option value="Courier New">Courier New</option>
-        <option value="Georgia">Georgia</option>
-        <option value="Verdana">Verdana</option>
-        <option value="Comic Sans MS">Comic Sans MS</option>
-      </select>
-    </div>
+        <div class="form-group">
+          <label>Font Family:</label>
+          <select id="fontFamily">
+            <option value="Arial">Arial</option>
+            <option value="Helvetica">Helvetica</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Comic Sans MS">Comic Sans MS</option>
+          </select>
+        </div>
 
-    <div class="form-group">
-      <label>Text Color:</label>
-      <input type="color" id="textColor" value="#ffffff">
-      <div class="color-preview" id="textColorPreview"></div>
-    </div>
+        <div class="form-group">
+          <label>Text Color:</label>
+          <input type="color" id="textColor" value="#ffffff">
+        </div>
 
-    <div class="form-group">
-      <label>Background Color:</label>
-      <input type="color" id="bgColor" value="#000000">
-      <div class="color-preview" id="bgColorPreview"></div>
-    </div>
+        <div class="form-group">
+          <label>Background Color:</label>
+          <input type="color" id="bgColor" value="#000000">
+        </div>
 
-    <div class="form-group">
-      <label>Background Opacity: <span class="range-value" id="bgOpacityValue">30%</span></label>
-      <input type="range" id="bgOpacity" min="0" max="100" value="30" oninput="updateValue('bgOpacity', '%')">
-    </div>
+        <div class="form-group">
+          <label>Background Opacity: <span class="range-value" id="bgOpacityValue">30%</span></label>
+          <input type="range" id="bgOpacity" min="0" max="100" value="30" oninput="updateValue('bgOpacity', '%')">
+        </div>
 
-    <div class="form-group">
-      <label>Text Opacity: <span class="range-value" id="textOpacityValue">100%</span></label>
-      <input type="range" id="textOpacity" min="0" max="100" value="100" oninput="updateValue('textOpacity', '%')">
+        <div class="form-group">
+          <label>Text Opacity: <span class="range-value" id="textOpacityValue">100%</span></label>
+          <input type="range" id="textOpacity" min="0" max="100" value="100" oninput="updateValue('textOpacity', '%')">
+        </div>
       </div>
 
-      <h2>Image Window</h2>
+      <!-- Code Window Settings -->
+      <div id="codeSettings" class="hidden">
+        <h2>Code Window</h2>
 
-    <div class="form-group">
-      <label>Background Opacity: <span class="range-value" id="imageBgOpacityValue">30%</span></label>
-      <input type="range" id="imageBgOpacity" min="0" max="100" value="30" oninput="updateValue('imageBgOpacity', '%')">
+        <div class="form-group">
+          <label>Font Size: <span class="range-value" id="codeFontSizeValue">14px</span></label>
+          <input type="range" id="codeFontSize" min="10" max="24" value="14" oninput="updateValue('codeFontSize', 'px')">
+        </div>
+
+        <div class="form-group">
+          <label>Background Opacity: <span class="range-value" id="codeBgOpacityValue">95%</span></label>
+          <input type="range" id="codeBgOpacity" min="0" max="100" value="95" oninput="updateValue('codeBgOpacity', '%')">
+        </div>
+      </div>
+
+      <!-- Image Window Settings -->
+      <div id="imageSettings" class="hidden">
+        <h2>Image Window</h2>
+
+        <div class="form-group">
+          <label>Background Opacity: <span class="range-value" id="imageBgOpacityValue">30%</span></label>
+          <input type="range" id="imageBgOpacity" min="0" max="100" value="30" oninput="updateValue('imageBgOpacity', '%')">
+        </div>
       </div>
 
       <div class="info">
@@ -310,31 +333,66 @@
     const { ipcRenderer } = require('electron');
 
     let currentSettings = null;
+    let currentWindowType = 'text';
 
     // Load current settings
     window.addEventListener('DOMContentLoaded', () => {
       currentSettings = ipcRenderer.sendSync('get-settings');
       loadSettings(currentSettings);
-      updateColorPreviews();
     });
+
+    // Listen for window type updates
+    ipcRenderer.on('set-window-type', (event, windowType) => {
+      currentWindowType = windowType;
+      showSettingsForWindow(windowType);
+    });
+
+    function showSettingsForWindow(windowType) {
+      // Hide all settings
+      document.getElementById('textSettings').classList.add('hidden');
+      document.getElementById('codeSettings').classList.add('hidden');
+      document.getElementById('imageSettings').classList.add('hidden');
+
+      // Show relevant settings and update title
+      if (windowType === 'text') {
+        document.getElementById('textSettings').classList.remove('hidden');
+        document.getElementById('windowTitle').textContent = 'TEXT SETTINGS';
+      } else if (windowType === 'code') {
+        document.getElementById('codeSettings').classList.remove('hidden');
+        document.getElementById('windowTitle').textContent = 'CODE SETTINGS';
+      } else if (windowType === 'image') {
+        document.getElementById('imageSettings').classList.remove('hidden');
+        document.getElementById('windowTitle').textContent = 'IMAGE SETTINGS';
+      }
+    }
 
     function loadSettings(settings) {
       // Text window settings
-      document.getElementById('fontSize').value = settings.textWindow.fontSize || 16;
-      document.getElementById('fontFamily').value = settings.textWindow.fontFamily || 'Arial';
-      document.getElementById('textColor').value = settings.textWindow.textColor || '#ffffff';
-      document.getElementById('bgColor').value = settings.textWindow.bgColor || '#000000';
-      document.getElementById('bgOpacity').value = (settings.textWindow.bgOpacity || 0.3) * 100;
-      document.getElementById('textOpacity').value = (settings.textWindow.textOpacity || 1.0) * 100;
+      if (settings.textWindow) {
+        document.getElementById('fontSize').value = settings.textWindow.fontSize || 16;
+        document.getElementById('fontFamily').value = settings.textWindow.fontFamily || 'Arial';
+        document.getElementById('textColor').value = settings.textWindow.textColor || '#ffffff';
+        document.getElementById('bgColor').value = settings.textWindow.bgColor || '#000000';
+        document.getElementById('bgOpacity').value = (settings.textWindow.bgOpacity || 0.3) * 100;
+        document.getElementById('textOpacity').value = (settings.textWindow.textOpacity || 1.0) * 100;
+        updateValue('fontSize', 'px');
+        updateValue('bgOpacity', '%');
+        updateValue('textOpacity', '%');
+      }
+
+      // Code window settings
+      if (settings.codeWindow) {
+        document.getElementById('codeFontSize').value = settings.codeWindow.fontSize || 14;
+        document.getElementById('codeBgOpacity').value = (settings.codeWindow.bgOpacity || 0.95) * 100;
+        updateValue('codeFontSize', 'px');
+        updateValue('codeBgOpacity', '%');
+      }
 
       // Image window settings
-      document.getElementById('imageBgOpacity').value = (settings.imageWindow.bgOpacity || 0.3) * 100;
-
-      // Update all value displays
-      updateValue('fontSize', 'px');
-      updateValue('bgOpacity', '%');
-      updateValue('textOpacity', '%');
-      updateValue('imageBgOpacity', '%');
+      if (settings.imageWindow) {
+        document.getElementById('imageBgOpacity').value = (settings.imageWindow.bgOpacity || 0.3) * 100;
+        updateValue('imageBgOpacity', '%');
+      }
     }
 
     function updateValue(id, unit) {
@@ -343,31 +401,30 @@
       if (display) {
         display.textContent = value + unit;
       }
-
-      if (id === 'textColor' || id === 'bgColor') {
-        updateColorPreviews();
-      }
-    }
-
-    function updateColorPreviews() {
-      document.getElementById('textColorPreview').style.background = document.getElementById('textColor').value;
-      document.getElementById('bgColorPreview').style.background = document.getElementById('bgColor').value;
     }
 
     function saveSettings() {
-      const newSettings = {
-        textWindow: {
+      const newSettings = {};
+
+      if (currentWindowType === 'text') {
+        newSettings.textWindow = {
           fontSize: parseInt(document.getElementById('fontSize').value),
           fontFamily: document.getElementById('fontFamily').value,
           textColor: document.getElementById('textColor').value,
           bgColor: document.getElementById('bgColor').value,
           bgOpacity: parseInt(document.getElementById('bgOpacity').value) / 100,
           textOpacity: parseInt(document.getElementById('textOpacity').value) / 100
-        },
-        imageWindow: {
+        };
+      } else if (currentWindowType === 'code') {
+        newSettings.codeWindow = {
+          fontSize: parseInt(document.getElementById('codeFontSize').value),
+          bgOpacity: parseInt(document.getElementById('codeBgOpacity').value) / 100
+        };
+      } else if (currentWindowType === 'image') {
+        newSettings.imageWindow = {
           bgOpacity: parseInt(document.getElementById('imageBgOpacity').value) / 100
-        }
-      };
+        };
+      }
 
       ipcRenderer.send('update-settings', newSettings);
 
@@ -381,7 +438,7 @@
     }
 
     function resetSettings() {
-      if (confirm('Reset all settings to default?')) {
+      if (confirm('Reset settings to default for this window?')) {
         const defaultSettings = {
           textWindow: {
             fontSize: 16,
@@ -391,13 +448,28 @@
             bgOpacity: 0.3,
             textOpacity: 1.0
           },
+          codeWindow: {
+            fontSize: 14,
+            bgOpacity: 0.95
+          },
           imageWindow: {
             bgOpacity: 0.3
           }
         };
 
         loadSettings(defaultSettings);
-        ipcRenderer.send('update-settings', defaultSettings);
+
+        // Save only the current window's settings
+        const newSettings = {};
+        if (currentWindowType === 'text') {
+          newSettings.textWindow = defaultSettings.textWindow;
+        } else if (currentWindowType === 'code') {
+          newSettings.codeWindow = defaultSettings.codeWindow;
+        } else if (currentWindowType === 'image') {
+          newSettings.imageWindow = defaultSettings.imageWindow;
+        }
+
+        ipcRenderer.send('update-settings', newSettings);
       }
     }
 
@@ -407,10 +479,6 @@
         window.close();
       }
     }
-
-    // Color picker change listeners
-    document.getElementById('textColor').addEventListener('change', updateColorPreviews);
-    document.getElementById('bgColor').addEventListener('change', updateColorPreviews);
   </script>
 </body>
 </html>
