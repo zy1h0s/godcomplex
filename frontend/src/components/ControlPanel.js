@@ -142,6 +142,35 @@ function ControlPanel({ user, token, onLogout }) {
     }
   };
 
+  // Handle cursor position changes (for collaborative awareness)
+  const handleTextCursorChange = (e) => {
+    const textarea = e.target;
+    const cursorStart = textarea.selectionStart;
+    const cursorEnd = textarea.selectionEnd;
+
+    if (socket && currentSession) {
+      // If there's a selection (start !== end), emit selection event
+      if (cursorStart !== cursorEnd) {
+        socket.emit('text-selection', {
+          sessionId: currentSession.id,
+          selectionStart: cursorStart,
+          selectionEnd: cursorEnd,
+          userId: user.id,
+          username: user.username
+        });
+      } else {
+        // Just cursor position, no selection
+        socket.emit('cursor-position', {
+          sessionId: currentSession.id,
+          cursorStart: cursorStart,
+          cursorEnd: cursorEnd,
+          userId: user.id,
+          username: user.username
+        });
+      }
+    }
+  };
+
   const handleCodeChange = (e) => {
     const newCode = e.target.value;
     setCodeContent(newCode);
@@ -322,6 +351,9 @@ function ControlPanel({ user, token, onLogout }) {
                         className="text-editor"
                         value={textContent}
                         onChange={handleTextChange}
+                        onSelect={handleTextCursorChange}
+                        onClick={handleTextCursorChange}
+                        onKeyUp={handleTextCursorChange}
                       />
                     </div>
                   )}
@@ -413,6 +445,9 @@ function ControlPanel({ user, token, onLogout }) {
                         className="text-editor"
                         value={textContent}
                         onChange={handleTextChange}
+                        onSelect={handleTextCursorChange}
+                        onClick={handleTextCursorChange}
+                        onKeyUp={handleTextCursorChange}
                       />
                     </div>
                   )}

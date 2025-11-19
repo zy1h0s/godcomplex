@@ -371,6 +371,30 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Cursor position update (for collaborative awareness)
+  socket.on('cursor-position', ({ sessionId, cursorStart, cursorEnd, userId, username }) => {
+    // Broadcast cursor position to others in the room (not saved to DB)
+    socket.to(sessionId).emit('cursor-position', {
+      cursorStart,
+      cursorEnd,
+      userId,
+      username,
+      timestamp: new Date()
+    });
+  });
+
+  // Text selection update (for collaborative awareness)
+  socket.on('text-selection', ({ sessionId, selectionStart, selectionEnd, userId, username }) => {
+    // Broadcast selection to others in the room (not saved to DB)
+    socket.to(sessionId).emit('text-selection', {
+      selectionStart,
+      selectionEnd,
+      userId,
+      username,
+      timestamp: new Date()
+    });
+  });
+
   // Real-time code update
   socket.on('code-update', async ({ sessionId, code, userId }) => {
     try {
