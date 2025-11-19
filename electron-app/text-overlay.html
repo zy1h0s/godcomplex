@@ -183,6 +183,10 @@
     let settings = null;
     let isUpdatingFromSocket = false;
 
+    // Track timeouts for auto-cleanup (for handling disconnects)
+    const cursorTimeouts = new Map();
+    const selectionTimeouts = new Map();
+
     const WS_URL = process.env.WS_URL || 'https://godcomplex.onrender.com';
 
     // Initialize
@@ -286,6 +290,11 @@
 
     // Show remote cursor position
     function showRemoteCursor(cursorStart, cursorEnd, userId, username) {
+      // Clear old timeout for this user
+      if (cursorTimeouts.has(userId)) {
+        clearTimeout(cursorTimeouts.get(userId));
+      }
+
       // Remove old cursor for this user
       const oldCursor = document.getElementById(`cursor-${userId}`);
       if (oldCursor) oldCursor.remove();
@@ -293,6 +302,12 @@
       // Remove any selection for this user (since cursor moved)
       const oldSelection = document.getElementById(`selection-${userId}`);
       if (oldSelection) oldSelection.remove();
+
+      // Also clear selection timeout since we're showing cursor now
+      if (selectionTimeouts.has(userId)) {
+        clearTimeout(selectionTimeouts.get(userId));
+        selectionTimeouts.delete(userId);
+      }
 
       const textContent = document.getElementById('textContent');
       const text = textContent.textContent;
@@ -329,11 +344,14 @@
 
         textContent.appendChild(cursor);
 
-        // Auto-remove cursor after 3 seconds of inactivity
-        setTimeout(() => {
+        // Auto-remove cursor after 10 seconds of inactivity (handles disconnect case)
+        const timeout = setTimeout(() => {
           const c = document.getElementById(`cursor-${userId}`);
           if (c) c.remove();
-        }, 3000);
+          cursorTimeouts.delete(userId);
+        }, 10000);
+
+        cursorTimeouts.set(userId, timeout);
       } catch (e) {
         console.error('Error showing cursor:', e);
       }
@@ -341,6 +359,11 @@
 
     // Show remote text selection
     function showRemoteSelection(selectionStart, selectionEnd, userId, username) {
+      // Clear old timeout for this user
+      if (selectionTimeouts.has(userId)) {
+        clearTimeout(selectionTimeouts.get(userId));
+      }
+
       // Remove old selection for this user
       const oldSelection = document.getElementById(`selection-${userId}`);
       if (oldSelection) oldSelection.remove();
@@ -348,6 +371,12 @@
       // Remove cursor for this user (selection replaces it)
       const oldCursor = document.getElementById(`cursor-${userId}`);
       if (oldCursor) oldCursor.remove();
+
+      // Also clear cursor timeout since we're showing selection now
+      if (cursorTimeouts.has(userId)) {
+        clearTimeout(cursorTimeouts.get(userId));
+        cursorTimeouts.delete(userId);
+      }
 
       const textContent = document.getElementById('textContent');
       const text = textContent.textContent;
@@ -388,11 +417,14 @@
 
         textContent.appendChild(selectionContainer);
 
-        // Auto-remove selection after 3 seconds of inactivity
-        setTimeout(() => {
+        // Auto-remove selection after 10 seconds of inactivity (handles disconnect case)
+        const timeout = setTimeout(() => {
           const s = document.getElementById(`selection-${userId}`);
           if (s) s.remove();
-        }, 3000);
+          selectionTimeouts.delete(userId);
+        }, 10000);
+
+        selectionTimeouts.set(userId, timeout);
       } catch (e) {
         console.error('Error showing selection:', e);
       }
