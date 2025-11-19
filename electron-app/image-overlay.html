@@ -215,7 +215,7 @@
     }
 
     function openSettings() {
-      ipcRenderer.send('open-settings');
+      ipcRenderer.send('open-settings', 'image');
     }
 
     function toggleMinimize() {

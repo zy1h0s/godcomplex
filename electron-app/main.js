@@ -57,7 +57,8 @@ const defaultSettings = {
     height: 500,
     x: 100,
     y: 550,
-    bgOpacity: 0.95
+    bgOpacity: 0.95,
+    fontSize: 14
   },
   imageWindow: {
     width: 500,
@@ -349,9 +350,11 @@ function createCodeOverlay(session) {
 }
 
 // Create settings window (STEALTH MODE)
-function createSettingsWindow() {
+function createSettingsWindow(windowType = 'text') {
   if (settingsWindow) {
     settingsWindow.focus();
+    // Update window type even if already open
+    settingsWindow.webContents.send('set-window-type', windowType);
     return;
   }
 
@@ -374,6 +377,11 @@ function createSettingsWindow() {
   });
 
   settingsWindow.loadFile('settings.html');
+
+  // Send window type after settings page loads
+  settingsWindow.webContents.on('did-finish-load', () => {
+    settingsWindow.webContents.send('set-window-type', windowType);
+  });
 
   // Aggressive taskbar hiding
   settingsWindow.setSkipTaskbar(true);
@@ -451,8 +459,8 @@ function setupIPCHandlers() {
     createImageOverlay(session);
   });
 
-  ipc.on('open-settings', () => {
-    createSettingsWindow();
+  ipc.on('open-settings', (event, windowType) => {
+    createSettingsWindow(windowType || 'text');
   });
 
   ipc.on('update-settings', (event, newSettings) => {
@@ -463,6 +471,11 @@ function setupIPCHandlers() {
     // Apply to text overlay
     if (textOverlayWindow && newSettings.textWindow) {
       textOverlayWindow.webContents.send('settings-updated', newSettings.textWindow);
+    }
+
+    // Apply to code overlay
+    if (codeOverlayWindow && newSettings.codeWindow) {
+      codeOverlayWindow.webContents.send('settings-updated', newSettings.codeWindow);
     }
 
     // Apply to image overlay
