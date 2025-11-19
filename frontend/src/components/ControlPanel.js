@@ -18,6 +18,8 @@ function ControlPanel({ user, token, onLogout }) {
   const [connectedUsers, setConnectedUsers] = useState([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
+  const lastCursorPosition = useRef({ start: -1, end: -1 });
 
   // Panel visibility
   const [visiblePanels, setVisiblePanels] = useState({
@@ -68,6 +70,48 @@ function ControlPanel({ user, token, onLogout }) {
       newSocket.close();
     };
   }, []);
+
+  // Real-time cursor tracking (Google Docs style)
+  useEffect(() => {
+    if (!currentSession || !socket) return;
+
+    // Poll cursor position every 50ms for smooth real-time updates
+    const cursorInterval = setInterval(() => {
+      if (textareaRef.current && document.activeElement === textareaRef.current) {
+        const cursorStart = textareaRef.current.selectionStart;
+        const cursorEnd = textareaRef.current.selectionEnd;
+
+        // Only emit if cursor position changed
+        if (cursorStart !== lastCursorPosition.current.start ||
+            cursorEnd !== lastCursorPosition.current.end) {
+
+          lastCursorPosition.current = { start: cursorStart, end: cursorEnd };
+
+          if (cursorStart !== cursorEnd) {
+            // There's a selection
+            socket.emit('text-selection', {
+              sessionId: currentSession.id,
+              selectionStart: cursorStart,
+              selectionEnd: cursorEnd,
+              userId: user.id,
+              username: user.username
+            });
+          } else {
+            // Just cursor position, no selection
+            socket.emit('cursor-position', {
+              sessionId: currentSession.id,
+              cursorStart: cursorStart,
+              cursorEnd: cursorEnd,
+              userId: user.id,
+              username: user.username
+            });
+          }
+        }
+      }
+    }, 50); // 50ms = 20 updates per second (smooth like Google Docs)
+
+    return () => clearInterval(cursorInterval);
+  }, [currentSession, socket, user]);
 
   // Load sessions
   useEffect(() => {
@@ -139,35 +183,6 @@ function ControlPanel({ user, token, onLogout }) {
         text: newText,
         userId: user.id
       });
-    }
-  };
-
-  // Handle cursor position changes (for collaborative awareness)
-  const handleTextCursorChange = (e) => {
-    const textarea = e.target;
-    const cursorStart = textarea.selectionStart;
-    const cursorEnd = textarea.selectionEnd;
-
-    if (socket && currentSession) {
-      // If there's a selection (start !== end), emit selection event
-      if (cursorStart !== cursorEnd) {
-        socket.emit('text-selection', {
-          sessionId: currentSession.id,
-          selectionStart: cursorStart,
-          selectionEnd: cursorEnd,
-          userId: user.id,
-          username: user.username
-        });
-      } else {
-        // Just cursor position, no selection
-        socket.emit('cursor-position', {
-          sessionId: currentSession.id,
-          cursorStart: cursorStart,
-          cursorEnd: cursorEnd,
-          userId: user.id,
-          username: user.username
-        });
-      }
     }
   };
 
@@ -348,12 +363,10 @@ function ControlPanel({ user, token, onLogout }) {
                         <h3>TEXT</h3>
                       </div>
                       <textarea
+                        ref={textareaRef}
                         className="text-editor"
                         value={textContent}
                         onChange={handleTextChange}
-                        onSelect={handleTextCursorChange}
-                        onClick={handleTextCursorChange}
-                        onKeyUp={handleTextCursorChange}
                       />
                     </div>
                   )}
@@ -442,12 +455,10 @@ function ControlPanel({ user, token, onLogout }) {
                         <h3>TEXT</h3>
                       </div>
                       <textarea
+                        ref={textareaRef}
                         className="text-editor"
                         value={textContent}
                         onChange={handleTextChange}
-                        onSelect={handleTextCursorChange}
-                        onClick={handleTextCursorChange}
-                        onKeyUp={handleTextCursorChange}
                       />
                     </div>
                   )}
