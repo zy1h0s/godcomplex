@@ -86,6 +86,45 @@
       overflow-y: auto;
       outline: none;
       -webkit-app-region: no-drag;
+      position: relative;
+    }
+
+    /* Collaborative cursor indicator */
+    .remote-cursor {
+      position: absolute;
+      width: 2px;
+      height: 1.2em;
+      background-color: #4285f4;
+      pointer-events: none;
+      z-index: 10;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    .remote-cursor-label {
+      position: absolute;
+      top: -20px;
+      left: 0;
+      background-color: #4285f4;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: bold;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* Text selection highlight */
+    .remote-selection {
+      position: absolute;
+      background-color: rgba(66, 133, 244, 0.3);
+      pointer-events: none;
+      z-index: 5;
     }
 
     .click-through-indicator {
@@ -195,6 +234,16 @@
         isUpdatingFromSocket = false;
       });
 
+      // Listen for cursor position updates
+      socket.on('cursor-position', ({ cursorStart, cursorEnd, userId, username }) => {
+        showRemoteCursor(cursorStart, cursorEnd, userId, username);
+      });
+
+      // Listen for text selection updates
+      socket.on('text-selection', ({ selectionStart, selectionEnd, userId, username }) => {
+        showRemoteSelection(selectionStart, selectionEnd, userId, username);
+      });
+
       socket.on('disconnect', () => {
         console.log('Disconnected from server');
       });
@@ -234,6 +283,120 @@
         }, 2000);
       }
     });
+
+    // Show remote cursor position
+    function showRemoteCursor(cursorStart, cursorEnd, userId, username) {
+      // Remove old cursor for this user
+      const oldCursor = document.getElementById(`cursor-${userId}`);
+      if (oldCursor) oldCursor.remove();
+
+      // Remove any selection for this user (since cursor moved)
+      const oldSelection = document.getElementById(`selection-${userId}`);
+      if (oldSelection) oldSelection.remove();
+
+      const textContent = document.getElementById('textContent');
+      const text = textContent.textContent;
+
+      // Calculate pixel position from character index
+      const range = document.createRange();
+      const textNode = textContent.firstChild || textContent;
+
+      try {
+        if (textNode.nodeType === Node.TEXT_NODE) {
+          const pos = Math.min(cursorStart, text.length);
+          range.setStart(textNode, pos);
+          range.setEnd(textNode, pos);
+        } else {
+          range.selectNodeContents(textContent);
+          range.collapse(true);
+        }
+
+        const rect = range.getBoundingClientRect();
+        const containerRect = textContent.getBoundingClientRect();
+
+        // Create cursor element
+        const cursor = document.createElement('div');
+        cursor.id = `cursor-${userId}`;
+        cursor.className = 'remote-cursor';
+        cursor.style.left = (rect.left - containerRect.left + textContent.scrollLeft) + 'px';
+        cursor.style.top = (rect.top - containerRect.top + textContent.scrollTop) + 'px';
+
+        // Create label
+        const label = document.createElement('div');
+        label.className = 'remote-cursor-label';
+        label.textContent = username;
+        cursor.appendChild(label);
+
+        textContent.appendChild(cursor);
+
+        // Auto-remove cursor after 3 seconds of inactivity
+        setTimeout(() => {
+          const c = document.getElementById(`cursor-${userId}`);
+          if (c) c.remove();
+        }, 3000);
+      } catch (e) {
+        console.error('Error showing cursor:', e);
+      }
+    }
+
+    // Show remote text selection
+    function showRemoteSelection(selectionStart, selectionEnd, userId, username) {
+      // Remove old selection for this user
+      const oldSelection = document.getElementById(`selection-${userId}`);
+      if (oldSelection) oldSelection.remove();
+
+      // Remove cursor for this user (selection replaces it)
+      const oldCursor = document.getElementById(`cursor-${userId}`);
+      if (oldCursor) oldCursor.remove();
+
+      const textContent = document.getElementById('textContent');
+      const text = textContent.textContent;
+
+      const start = Math.min(selectionStart, text.length);
+      const end = Math.min(selectionEnd, text.length);
+
+      if (start === end) return; // No selection
+
+      try {
+        const range = document.createRange();
+        const textNode = textContent.firstChild || textContent;
+
+        if (textNode.nodeType === Node.TEXT_NODE) {
+          range.setStart(textNode, start);
+          range.setEnd(textNode, end);
+        } else {
+          return;
+        }
+
+        const rects = range.getClientRects();
+        const containerRect = textContent.getBoundingClientRect();
+
+        // Create highlight overlays for each line of selection
+        const selectionContainer = document.createElement('div');
+        selectionContainer.id = `selection-${userId}`;
+
+        for (let i = 0; i < rects.length; i++) {
+          const rect = rects[i];
+          const highlight = document.createElement('div');
+          highlight.className = 'remote-selection';
+          highlight.style.left = (rect.left - containerRect.left + textContent.scrollLeft) + 'px';
+          highlight.style.top = (rect.top - containerRect.top + textContent.scrollTop) + 'px';
+          highlight.style.width = rect.width + 'px';
+          highlight.style.height = rect.height + 'px';
+          selectionContainer.appendChild(highlight);
+        }
+
+        textContent.appendChild(selectionContainer);
+
+        // Auto-remove selection after 3 seconds of inactivity
+        setTimeout(() => {
+          const s = document.getElementById(`selection-${userId}`);
+          if (s) s.remove();
+        }, 3000);
+      } catch (e) {
+        console.error('Error showing selection:', e);
+      }
+    }
 
     // Helper function
     function hexToRgba(hex, alpha) {
