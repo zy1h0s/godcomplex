@@ -38,12 +38,12 @@ function makeWindowStealth(window, callback) {
   }
 }
 
-// Default settings
+// Default settings - Small windows positioned side by side
 const defaultSettings = {
   textWindow: {
-    width: 600,
-    height: 400,
-    x: 100,
+    width: 350,
+    height: 300,
+    x: 50,
     y: 100,
     bgOpacity: 0.3,
     textOpacity: 1.0,
@@ -53,17 +53,17 @@ const defaultSettings = {
     bgColor: '#000000'
   },
   codeWindow: {
-    width: 700,
-    height: 500,
-    x: 100,
-    y: 550,
+    width: 350,
+    height: 300,
+    x: 420,
+    y: 100,
     bgOpacity: 0.95,
     fontSize: 14
   },
   imageWindow: {
-    width: 500,
-    height: 500,
-    x: 750,
+    width: 350,
+    height: 300,
+    x: 790,
     y: 100,
     bgOpacity: 0.3
   },
@@ -133,7 +133,7 @@ function createTextOverlay(session) {
     show: false,  // Don't show until stealth is applied
     resizable: true,
     hasShadow: false,
-    focusable: false,
+    focusable: true,
     title: '',  // NO TITLE - invisible to Chrome's window picker!
     webPreferences: {
       nodeIntegration: true,
@@ -211,7 +211,7 @@ function createImageOverlay(session) {
     show: false,  // Don't show until stealth is applied
     resizable: true,
     hasShadow: false,
-    focusable: false,
+    focusable: true,
     title: '',  // NO TITLE - invisible to Chrome's window picker!
     webPreferences: {
       nodeIntegration: true,
@@ -402,7 +402,7 @@ function createSettingsWindow(windowType = 'text') {
 function registerShortcuts() {
   const settings = getSettings();
 
-  // Toggle click-through (FIXED - proper toggle)
+  // Toggle click-through (FIXED - proper toggle with window focus)
   globalShortcut.register(settings.hotkey, () => {
     const currentSettings = getSettings();
     currentSettings.clickThrough = !currentSettings.clickThrough;
@@ -410,24 +410,35 @@ function registerShortcuts() {
 
     console.log('Click-through toggled:', currentSettings.clickThrough);
 
-    if (textOverlayWindow) {
+    // Apply to all windows with proper handling
+    if (textOverlayWindow && !textOverlayWindow.isDestroyed()) {
       textOverlayWindow.setIgnoreMouseEvents(currentSettings.clickThrough);
+      if (!currentSettings.clickThrough) {
+        // Re-enable interaction when disabling click-through
+        textOverlayWindow.setFocusable(true);
+      }
     }
-    if (codeOverlayWindow) {
+    if (codeOverlayWindow && !codeOverlayWindow.isDestroyed()) {
       codeOverlayWindow.setIgnoreMouseEvents(currentSettings.clickThrough);
+      if (!currentSettings.clickThrough) {
+        codeOverlayWindow.setFocusable(true);
+      }
     }
-    if (imageOverlayWindow) {
+    if (imageOverlayWindow && !imageOverlayWindow.isDestroyed()) {
       imageOverlayWindow.setIgnoreMouseEvents(currentSettings.clickThrough);
+      if (!currentSettings.clickThrough) {
+        imageOverlayWindow.setFocusable(true);
+      }
     }
 
     // Notify all windows
-    if (textOverlayWindow) {
+    if (textOverlayWindow && !textOverlayWindow.isDestroyed()) {
       textOverlayWindow.webContents.send('click-through-changed', currentSettings.clickThrough);
     }
-    if (codeOverlayWindow) {
+    if (codeOverlayWindow && !codeOverlayWindow.isDestroyed()) {
       codeOverlayWindow.webContents.send('click-through-changed', currentSettings.clickThrough);
     }
-    if (imageOverlayWindow) {
+    if (imageOverlayWindow && !imageOverlayWindow.isDestroyed()) {
       imageOverlayWindow.webContents.send('click-through-changed', currentSettings.clickThrough);
     }
   });
@@ -556,9 +567,9 @@ const minimizedStates = {
 };
 
 const originalSizes = {
-  text: { width: 600, height: 400 },
-  code: { width: 700, height: 500 },
-  image: { width: 500, height: 500 }
+  text: { width: 350, height: 300 },
+  code: { width: 350, height: 300 },
+  image: { width: 350, height: 300 }
 };
 
 
