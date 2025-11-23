@@ -11,6 +11,9 @@ let codeOverlayWindow = null;
 let imageOverlayWindow = null;
 let settingsWindow = null;
 
+// Global stealth interval - only create once
+let stealthInterval = null;
+
 // Function to make window stealth (invisible to screen capture)
 function makeWindowStealth(window, callback) {
   if (process.platform === 'win32') {
@@ -19,20 +22,33 @@ function makeWindowStealth(window, callback) {
 
     // Apply stealth IMMEDIATELY (no delay) - applies to ALL electron processes
     const psScript = path.join(__dirname, 'set-stealth.ps1');
-    exec(`powershell.exe -ExecutionPolicy Bypass -File "${psScript}"`, (error, stdout) => {
-      if (!error) {
-        console.log('✅ Stealth mode applied');
-        console.log(stdout);
-      } else {
-        console.error('❌ Stealth error:', error);
-      }
-      if (callback) callback();
-    });
 
-    // Also re-apply stealth every 3 seconds to ALL processes
-    setInterval(() => {
-      exec(`powershell.exe -ExecutionPolicy Bypass -File "${psScript}"`, () => {});
-    }, 3000);
+    // Function to apply stealth
+    const applyStealth = () => {
+      exec(`powershell.exe -ExecutionPolicy Bypass -File "${psScript}"`, (error, stdout) => {
+        if (!error) {
+          console.log('✅ Stealth mode applied');
+          if (stdout) console.log(stdout);
+        } else {
+          console.error('❌ Stealth error:', error);
+        }
+      });
+    };
+
+    // Apply immediately
+    applyStealth();
+
+    // Setup aggressive stealth re-application (every 1 second) - only once globally
+    if (!stealthInterval) {
+      stealthInterval = setInterval(() => {
+        applyStealth();
+      }, 1000); // More aggressive: every 1 second instead of 3
+    }
+
+    // Callback after first application
+    if (callback) {
+      setTimeout(callback, 200);
+    }
   } else {
     if (callback) callback();
   }
@@ -101,8 +117,19 @@ function createLoginWindow() {
 
   loginWindow.loadFile('login.html');
 
-  // Aggressive taskbar hiding
+  // AGGRESSIVE STEALTH: Multiple layers of protection
   loginWindow.setSkipTaskbar(true);
+  loginWindow.setContentProtection(true);
+
+  // Re-apply stealth protection every second for this window
+  const loginStealthInterval = setInterval(() => {
+    if (loginWindow && !loginWindow.isDestroyed()) {
+      loginWindow.setSkipTaskbar(true);
+      loginWindow.setContentProtection(true);
+    } else {
+      clearInterval(loginStealthInterval);
+    }
+  }, 1000);
 
   // Make invisible to screen capture, THEN show window
   makeWindowStealth(loginWindow, () => {
@@ -142,11 +169,22 @@ function createTextOverlay(session) {
     }
   });
 
-  // STEALTH MODE - Invisible to taskbar and screen recording
+  // AGGRESSIVE STEALTH MODE - Multiple layers
   textOverlayWindow.setSkipTaskbar(true);
+  textOverlayWindow.setContentProtection(true);
   textOverlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   textOverlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
   textOverlayWindow.setIgnoreMouseEvents(settings.clickThrough);
+
+  // Re-apply stealth protection every second
+  const textStealthInterval = setInterval(() => {
+    if (textOverlayWindow && !textOverlayWindow.isDestroyed()) {
+      textOverlayWindow.setSkipTaskbar(true);
+      textOverlayWindow.setContentProtection(true);
+    } else {
+      clearInterval(textStealthInterval);
+    }
+  }, 1000);
 
   textOverlayWindow.loadFile('text-overlay.html');
 
@@ -220,11 +258,22 @@ function createImageOverlay(session) {
     }
   });
 
-  // STEALTH MODE - Invisible to taskbar and screen recording
+  // AGGRESSIVE STEALTH MODE - Multiple layers
   imageOverlayWindow.setSkipTaskbar(true);
+  imageOverlayWindow.setContentProtection(true);
   imageOverlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   imageOverlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
   imageOverlayWindow.setIgnoreMouseEvents(settings.clickThrough);
+
+  // Re-apply stealth protection every second
+  const imageStealthInterval = setInterval(() => {
+    if (imageOverlayWindow && !imageOverlayWindow.isDestroyed()) {
+      imageOverlayWindow.setSkipTaskbar(true);
+      imageOverlayWindow.setContentProtection(true);
+    } else {
+      clearInterval(imageStealthInterval);
+    }
+  }, 1000);
 
   imageOverlayWindow.loadFile('image-overlay.html');
 
@@ -297,11 +346,22 @@ function createCodeOverlay(session) {
     }
   });
 
-  // STEALTH MODE - Invisible to taskbar and screen recording
+  // AGGRESSIVE STEALTH MODE - Multiple layers
   codeOverlayWindow.setSkipTaskbar(true);
+  codeOverlayWindow.setContentProtection(true);
   codeOverlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   codeOverlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
   codeOverlayWindow.setIgnoreMouseEvents(settings.clickThrough);
+
+  // Re-apply stealth protection every second
+  const codeStealthInterval = setInterval(() => {
+    if (codeOverlayWindow && !codeOverlayWindow.isDestroyed()) {
+      codeOverlayWindow.setSkipTaskbar(true);
+      codeOverlayWindow.setContentProtection(true);
+    } else {
+      clearInterval(codeStealthInterval);
+    }
+  }, 1000);
 
   codeOverlayWindow.loadFile('code-overlay.html');
 
@@ -383,8 +443,19 @@ function createSettingsWindow(windowType = 'text') {
     settingsWindow.webContents.send('set-window-type', windowType);
   });
 
-  // Aggressive taskbar hiding
+  // AGGRESSIVE STEALTH: Multiple layers of protection
   settingsWindow.setSkipTaskbar(true);
+  settingsWindow.setContentProtection(true);
+
+  // Re-apply stealth protection every second for settings window
+  const settingsStealthInterval = setInterval(() => {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.setSkipTaskbar(true);
+      settingsWindow.setContentProtection(true);
+    } else {
+      clearInterval(settingsStealthInterval);
+    }
+  }, 1000);
 
   // Make invisible to screen capture, THEN show window
   makeWindowStealth(settingsWindow, () => {
