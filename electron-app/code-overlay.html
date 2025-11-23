@@ -183,9 +183,9 @@
     let io;
     try {
       io = require('socket.io-client');
-      console.log('✅ Socket.IO loaded from node_modules');
+      console.log(' Socket.IO loaded from node_modules');
     } catch (error) {
-      console.error('❌❌❌ Socket.IO NOT LOADED! ❌❌❌');
+      console.error(' Socket.IO NOT LOADED!');
       console.error('Error:', error);
       document.getElementById('debug-status').textContent = 'ERROR: Socket.IO not found!';
       document.getElementById('debug-status').style.background = 'rgba(255, 0, 0, 0.9)';
@@ -273,7 +273,7 @@
       }
 
       socket.on('connect', () => {
-        console.log('✅✅✅ CONNECTED TO WEBSOCKET! ✅✅✅');
+        console.log(' CONNECTED TO WEBSOCKET! ');
         setStatus('Connected to server!', true);
 
         if (session) {
@@ -344,41 +344,64 @@
       // Escape HTML first
       code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+      // Use placeholders to protect highlighted regions from being re-highlighted
+      const PLACEHOLDER_PREFIX = '\x00HIGHLIGHT_';
+      const PLACEHOLDER_SUFFIX = '\x00';
+      let placeholders = [];
+      let placeholderIndex = 0;
+
+      function addPlaceholder(content) {
+        const placeholder = `${PLACEHOLDER_PREFIX}${placeholderIndex}${PLACEHOLDER_SUFFIX}`;
+        placeholders.push(content);
+        placeholderIndex++;
+        return placeholder;
+      }
+
+      function restorePlaceholders(text) {
+        placeholders.forEach((content, index) => {
+          const placeholder = `${PLACEHOLDER_PREFIX}${index}${PLACEHOLDER_SUFFIX}`;
+          text = text.replace(placeholder, content);
+        });
+        return text;
+      }
+
       // Common keywords across languages
       const keywords = '\\b(function|const|let|var|if|else|for|while|return|class|def|import|from|as|async|await|try|catch|finally|throw|new|this|super|extends|implements|interface|public|private|protected|static|void|int|float|double|bool|boolean|string|char|long|short|null|undefined|true|false|None|True|False|self|print|console|log|require|export|default|switch|case|break|continue|do|typeof|instanceof)\\b';
 
       // Apply highlighting in order (important: strings and comments first to avoid highlighting keywords inside them)
 
       // Multi-line comments (/* ... */)
-      code = code.replace(/\/\*[\s\S]*?\*\//g, match => `<span class="hljs-comment">${match}</span>`);
+      code = code.replace(/\/\*[\s\S]*?\*\//g, match => {
+        return addPlaceholder(`<span class="hljs-comment">${match}</span>`);
+      });
 
       // Single-line comments (// ... or # ...)
-      code = code.replace(/(\/\/.*?$|#.*?$)/gm, match => `<span class="hljs-comment">${match}</span>`);
+      code = code.replace(/(\/\/.*?$|#.*?$)/gm, match => {
+        return addPlaceholder(`<span class="hljs-comment">${match}</span>`);
+      });
 
-      // Strings (double and single quotes, backticks)
-      code = code.replace(/("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)/g, match => {
-        // Don't re-highlight if already in a span
-        if (match.includes('<span')) return match;
-        return `<span class="hljs-string">${match}</span>`;
+      // Strings (double and single quotes, backticks, f-strings)
+      code = code.replace(/(f?"(?:\\.|[^"\\])*"|f?'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)/g, match => {
+        return addPlaceholder(`<span class="hljs-string">${match}</span>`);
       });
 
       // Numbers
       code = code.replace(/\b(\d+\.?\d*)\b/g, match => {
-        if (match.includes('<span')) return match;
-        return `<span class="hljs-number">${match}</span>`;
+        return addPlaceholder(`<span class="hljs-number">${match}</span>`);
       });
 
       // Keywords
       code = code.replace(new RegExp(keywords, 'g'), match => {
-        if (match.includes('<span')) return match;
-        return `<span class="hljs-keyword">${match}</span>`;
+        return addPlaceholder(`<span class="hljs-keyword">${match}</span>`);
       });
 
       // Function names (word followed by parenthesis)
       code = code.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g, match => {
-        if (match.includes('<span')) return match;
-        return `<span class="hljs-function">${match}</span>`;
+        return addPlaceholder(`<span class="hljs-function">${match}</span>`);
       });
+
+      // Restore all placeholders
+      code = restorePlaceholders(code);
 
       return code;
     }
@@ -390,7 +413,7 @@
       console.log('Code type:', typeof code);
 
       if (code && code.trim()) {
-        console.log('✅ DISPLAYING CODE');
+        
         console.log('First 200 chars:', code.substring(0, 200));
 
         // Apply syntax highlighting
@@ -398,10 +421,10 @@
         codeElement.innerHTML = highlightedCode;
         codeElement.style.display = 'block';
 
-        setStatus('Displaying ' + code.length + ' chars (highlighted)', true);
+        
       } else {
-        console.log('⚠️ NO CODE TO DISPLAY');
-        codeElement.innerHTML = '<span class="empty">No code received yet. Send code from frontend.</span>';
+        console.log(' NO CODE TO DISPLAY');
+        codeElement.innerHTML = '<span class="empty">No code received yet.</span>';
       }
     }
 
