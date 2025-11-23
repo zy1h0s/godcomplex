@@ -417,18 +417,24 @@ function registerShortcuts() {
         // Re-enable interaction when disabling click-through
         textOverlayWindow.setFocusable(true);
       }
+      // CRITICAL: Always ensure window stays hidden from taskbar
+      textOverlayWindow.setSkipTaskbar(true);
     }
     if (codeOverlayWindow && !codeOverlayWindow.isDestroyed()) {
       codeOverlayWindow.setIgnoreMouseEvents(currentSettings.clickThrough);
       if (!currentSettings.clickThrough) {
         codeOverlayWindow.setFocusable(true);
       }
+      // CRITICAL: Always ensure window stays hidden from taskbar
+      codeOverlayWindow.setSkipTaskbar(true);
     }
     if (imageOverlayWindow && !imageOverlayWindow.isDestroyed()) {
       imageOverlayWindow.setIgnoreMouseEvents(currentSettings.clickThrough);
       if (!currentSettings.clickThrough) {
         imageOverlayWindow.setFocusable(true);
       }
+      // CRITICAL: Always ensure window stays hidden from taskbar
+      imageOverlayWindow.setSkipTaskbar(true);
     }
 
     // Notify all windows
