@@ -62,11 +62,8 @@ const defaultSettings = {
     x: 50,
     y: 100,
     bgOpacity: 0.3,
-    textOpacity: 1.0,
     fontSize: 16,
-    fontFamily: 'Arial',
-    textColor: '#ffffff',
-    bgColor: '#000000'
+    fontFamily: 'Arial'
   },
   codeWindow: {
     width: 350,
