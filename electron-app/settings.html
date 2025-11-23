@@ -264,23 +264,12 @@
         </div>
 
         <div class="form-group">
-          <label>Text Color:</label>
-          <input type="color" id="textColor" value="#ffffff">
-        </div>
-
-        <div class="form-group">
-          <label>Background Color:</label>
-          <input type="color" id="bgColor" value="#000000">
-        </div>
-
-        <div class="form-group">
           <label>Background Opacity: <span class="range-value" id="bgOpacityValue">30%</span></label>
           <input type="range" id="bgOpacity" min="0" max="100" value="30" oninput="updateValue('bgOpacity', '%')">
         </div>
 
-        <div class="form-group">
-          <label>Text Opacity: <span class="range-value" id="textOpacityValue">100%</span></label>
-          <input type="range" id="textOpacity" min="0" max="100" value="100" oninput="updateValue('textOpacity', '%')">
+        <div class="info">
+          <p><strong>Theme Toggle:</strong> Use the ☀/🌙 button in the text window to switch between dark (black bg/white text) and light (white bg/black text) modes.</p>
         </div>
       </div>
 
@@ -367,13 +356,9 @@
       if (settings.textWindow) {
         document.getElementById('fontSize').value = settings.textWindow.fontSize || 16;
         document.getElementById('fontFamily').value = settings.textWindow.fontFamily || 'Arial';
-        document.getElementById('textColor').value = settings.textWindow.textColor || '#ffffff';
-        document.getElementById('bgColor').value = settings.textWindow.bgColor || '#000000';
         document.getElementById('bgOpacity').value = (settings.textWindow.bgOpacity || 0.3) * 100;
-        document.getElementById('textOpacity').value = (settings.textWindow.textOpacity || 1.0) * 100;
         updateValue('fontSize', 'px');
         updateValue('bgOpacity', '%');
-        updateValue('textOpacity', '%');
       }
 
       // Code window settings
@@ -406,10 +391,7 @@
         newSettings.textWindow = {
           fontSize: parseInt(document.getElementById('fontSize').value),
           fontFamily: document.getElementById('fontFamily').value,
-          textColor: document.getElementById('textColor').value,
-          bgColor: document.getElementById('bgColor').value,
-          bgOpacity: parseInt(document.getElementById('bgOpacity').value) / 100,
-          textOpacity: parseInt(document.getElementById('textOpacity').value) / 100
+          bgOpacity: parseInt(document.getElementById('bgOpacity').value) / 100
         };
       } else if (currentWindowType === 'code') {
         newSettings.codeWindow = {
@@ -439,10 +421,7 @@
           textWindow: {
             fontSize: 16,
             fontFamily: 'Arial',
-            textColor: '#ffffff',
-            bgColor: '#000000',
-            bgOpacity: 0.3,
-            textOpacity: 1.0
+            bgOpacity: 0.3
           },
           codeWindow: {
             fontSize: 14,
