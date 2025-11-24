@@ -91,6 +91,7 @@
       outline: none;
       -webkit-app-region: no-drag;
       position: relative;
+      color: #ffffff; /* Default white text for dark mode */
     }
 
     /* Collaborative cursor indicator */
@@ -165,6 +166,11 @@
     /* Light mode - white background, black text */
     body.light-mode #textContent {
       color: #000000 !important;
+    }
+
+    /* Dark mode - ensure white text (default) */
+    body:not(.light-mode) #textContent {
+      color: #ffffff !important;
     }
 
     body.light-mode .empty {
