@@ -16,40 +16,63 @@ let stealthInterval = null;
 
 // Function to make window stealth (invisible to screen capture)
 function makeWindowStealth(window, callback) {
-  if (process.platform === 'win32') {
-    // setContentProtection blocks screen capture on some platforms
-    window.setContentProtection(true);
+  // setContentProtection works on both Windows and macOS
+  window.setContentProtection(true);
 
-    // Apply stealth IMMEDIATELY (no delay) - applies to ALL electron processes
+  if (process.platform === 'win32') {
+    // Windows-specific stealth using PowerShell
     const psScript = path.join(__dirname, 'set-stealth.ps1');
 
-    // Function to apply stealth
     const applyStealth = () => {
       exec(`powershell.exe -ExecutionPolicy Bypass -File "${psScript}"`, (error, stdout) => {
         if (!error) {
-          console.log('✅ Stealth mode applied');
+          console.log('✅ Windows stealth mode applied');
           if (stdout) console.log(stdout);
         } else {
-          console.error('❌ Stealth error:', error);
+          console.error('❌ Windows stealth error:', error);
         }
       });
     };
 
-    // Apply immediately
     applyStealth();
 
-    // Setup aggressive stealth re-application (every 1 second) - only once globally
     if (!stealthInterval) {
       stealthInterval = setInterval(() => {
         applyStealth();
-      }, 1000); // More aggressive: every 1 second instead of 3
+      }, 1000);
     }
 
-    // Callback after first application
+    if (callback) {
+      setTimeout(callback, 200);
+    }
+  } else if (process.platform === 'darwin') {
+    // macOS-specific stealth
+    const shScript = path.join(__dirname, 'set-stealth.sh');
+
+    const applyStealth = () => {
+      exec(`sh "${shScript}"`, (error, stdout) => {
+        if (!error) {
+          console.log('✅ macOS stealth mode applied');
+          if (stdout) console.log(stdout);
+        } else {
+          console.error('❌ macOS stealth error:', error);
+        }
+      });
+    };
+
+    applyStealth();
+
+    if (!stealthInterval) {
+      stealthInterval = setInterval(() => {
+        applyStealth();
+      }, 1000);
+    }
+
     if (callback) {
       setTimeout(callback, 200);
     }
   } else {
+    // Other platforms
     if (callback) callback();
   }
 }
