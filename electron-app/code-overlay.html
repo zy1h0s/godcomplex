@@ -115,11 +115,6 @@
     .hljs-builtin { color: #4EC9B0; }
 
     /* Light mode syntax highlighting (darker colors for visibility on white backgrounds) */
-    body.light-mode #code-display {
-      background: rgba(255, 255, 255, 0.95);
-      border: 2px solid rgba(0, 0, 0, 0.1);
-    }
-
     body.light-mode #code {
       color: #1a1a1a;
     }
@@ -267,7 +262,9 @@
       // Apply settings
       if (settings) {
         const opacity = settings.bgOpacity || 0.95;
-        codeDisplay.style.background = `rgba(30, 30, 30, ${opacity})`;
+        // Don't set background here - let CSS handle it based on theme
+        // Store opacity for later use
+        codeDisplay.dataset.opacity = opacity;
         console.log('✅ Settings applied, opacity:', opacity);
       }
 
@@ -471,18 +468,25 @@
       window.close();
     }
 
-    // Toggle between dark and light mode (only changes code colors, not background)
+    // Toggle between dark and light mode (changes both code colors AND background)
     function toggleTheme() {
       isLightMode = !isLightMode;
+      const opacity = parseFloat(codeDisplay.dataset.opacity) || 0.95;
 
       if (isLightMode) {
         document.body.classList.add('light-mode');
         themeBtn.textContent = '🌙'; // Moon icon for light mode (click to go dark)
         themeBtn.classList.add('active');
+        // Apply white background
+        codeDisplay.style.background = `rgba(255, 255, 255, ${opacity})`;
+        codeDisplay.style.border = '2px solid rgba(0, 0, 0, 0.1)';
       } else {
         document.body.classList.remove('light-mode');
         themeBtn.textContent = '☀'; // Sun icon for dark mode (click to go light)
         themeBtn.classList.remove('active');
+        // Apply dark background
+        codeDisplay.style.background = `rgba(30, 30, 30, ${opacity})`;
+        codeDisplay.style.border = '2px solid rgba(255, 255, 255, 0.1)';
       }
 
       // Re-highlight code with new theme
@@ -515,7 +519,14 @@
     ipcRenderer.on('settings-updated', (event, newSettings) => {
       console.log('Settings updated:', newSettings);
       if (newSettings.bgOpacity !== undefined) {
-        codeDisplay.style.background = `rgba(30, 30, 30, ${newSettings.bgOpacity})`;
+        // Store opacity for CSS to use
+        codeDisplay.dataset.opacity = newSettings.bgOpacity;
+        // Apply background based on current theme
+        if (isLightMode) {
+          codeDisplay.style.background = `rgba(255, 255, 255, ${newSettings.bgOpacity})`;
+        } else {
+          codeDisplay.style.background = `rgba(30, 30, 30, ${newSettings.bgOpacity})`;
+        }
         console.log('Updated background opacity:', newSettings.bgOpacity);
       }
       if (newSettings.fontSize !== undefined) {

@@ -163,10 +163,6 @@
     }
 
     /* Light mode - white background, black text */
-    body.light-mode #container {
-      background: rgba(255, 255, 255, 0.3) !important;
-    }
-
     body.light-mode #textContent {
       color: #000000 !important;
     }
@@ -224,11 +220,11 @@
       const container = document.getElementById('container');
       const textContent = document.getElementById('textContent');
 
-      // Background - always black/white based on theme, opacity from settings
-      container.style.background = hexToRgba('#000000', settings.bgOpacity || 0.3);
+      // Background - black/white based on current theme, opacity from settings
+      const bgColor = isLightMode ? '#ffffff' : '#000000';
+      container.style.background = hexToRgba(bgColor, settings.bgOpacity || 0.3);
 
-      // Text - always white for dark mode (theme toggle will change to black)
-      textContent.style.color = '#ffffff';
+      // Text - white for dark mode, black for light mode (CSS handles this)
       textContent.style.fontSize = (settings.fontSize || 16) + 'px';
       textContent.style.fontFamily = settings.fontFamily || 'Arial';
     }
@@ -475,15 +471,20 @@
       isLightMode = !isLightMode;
       const container = document.getElementById('container');
       const textContent = document.getElementById('textContent');
+      const opacity = settings?.bgOpacity || 0.3;
 
       if (isLightMode) {
         document.body.classList.add('light-mode');
         themeBtn.textContent = '🌙'; // Moon icon for light mode
         themeBtn.classList.add('active');
+        // Apply white background with settings opacity
+        container.style.background = hexToRgba('#ffffff', opacity);
       } else {
         document.body.classList.remove('light-mode');
         themeBtn.textContent = '☀'; // Sun icon for dark mode
         themeBtn.classList.remove('active');
+        // Apply black background with settings opacity
+        container.style.background = hexToRgba('#000000', opacity);
       }
 
       console.log('Theme toggled:', isLightMode ? 'Light' : 'Dark');
