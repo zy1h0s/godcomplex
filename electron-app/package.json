@@ -35,11 +35,10 @@
       "verifyUpdateCodeSignature": false
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": "zip",
       "icon": "assets/icon-256.png",
       "category": "public.app-category.utilities",
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
+      "hardenedRuntime": false,
       "entitlements": "entitlements.mac.plist",
       "entitlementsInherit": "entitlements.mac.plist",
       "extendInfo": {
