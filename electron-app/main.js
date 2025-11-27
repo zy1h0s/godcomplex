@@ -16,6 +16,23 @@ let stealthInterval = null;
 
 // Function to make window stealth (invisible to screen capture)
 function makeWindowStealth(window, callback) {
+<<<<<<< HEAD
+  if (process.platform === 'win32') {
+    // setContentProtection blocks screen capture on some platforms
+    window.setContentProtection(true);
+
+    // Apply stealth IMMEDIATELY (no delay) - applies to ALL electron processes
+    const psScript = path.join(__dirname, 'set-stealth.ps1');
+
+    // Function to apply stealth
+    const applyStealth = () => {
+      exec(`powershell.exe -ExecutionPolicy Bypass -File "${psScript}"`, (error, stdout) => {
+        if (!error) {
+          console.log('✅ Stealth mode applied');
+          if (stdout) console.log(stdout);
+        } else {
+          console.error('❌ Stealth error:', error);
+=======
   // setContentProtection works on both Windows and macOS
   window.setContentProtection(true);
 
@@ -30,10 +47,24 @@ function makeWindowStealth(window, callback) {
           if (stdout) console.log(stdout);
         } else {
           console.error('❌ Windows stealth error:', error);
+>>>>>>> 9c1459a5dfb9aa46136606f936ef0565787e94fd
         }
       });
     };
 
+<<<<<<< HEAD
+    // Apply immediately
+    applyStealth();
+
+    // Setup aggressive stealth re-application (every 1 second) - only once globally
+    if (!stealthInterval) {
+      stealthInterval = setInterval(() => {
+        applyStealth();
+      }, 1000); // More aggressive: every 1 second instead of 3
+    }
+
+    // Callback after first application
+=======
     applyStealth();
 
     if (!stealthInterval) {
@@ -68,11 +99,15 @@ function makeWindowStealth(window, callback) {
       }, 1000);
     }
 
+>>>>>>> 9c1459a5dfb9aa46136606f936ef0565787e94fd
     if (callback) {
       setTimeout(callback, 200);
     }
   } else {
+<<<<<<< HEAD
+=======
     // Other platforms
+>>>>>>> 9c1459a5dfb9aa46136606f936ef0565787e94fd
     if (callback) callback();
   }
 }

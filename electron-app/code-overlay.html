@@ -23,7 +23,7 @@
     #titlebar {
       width: 100%;
       height: 28px;
-      background: rgba(0, 0, 0, 0.95);
+      background: rgba(0, 0, 0, 0.478);
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
@@ -102,7 +102,7 @@
     }
 
     /* Dark mode syntax highlighting (VS Code Dark+ theme - DEFAULT) */
-    .hljs-comment { color: #6A9955; font-style: italic; }
+    .hljs-comment { color: #ff0000; font-style: italic; }
     .hljs-string { color: #CE9178; }
     .hljs-number { color: #B5CEA8; }
     .hljs-keyword { color: #569CD6; font-weight: bold; }
@@ -119,17 +119,17 @@
       color: #1a1a1a;
     }
 
-    body.light-mode .hljs-comment { color: #2d5016; font-style: italic; }
-    body.light-mode .hljs-string { color: #8B4513; }
-    body.light-mode .hljs-number { color: #1a5c1a; }
+    body.light-mode .hljs-comment { color: #ff0000; font-style: italic; }
+    body.light-mode .hljs-string { color: #8B4513; font-weight: bold;}
+    body.light-mode .hljs-number { color: #1a5c1a; font-weight: bold;}
     body.light-mode .hljs-keyword { color: #0000CD; font-weight: bold; }
-    body.light-mode .hljs-function { color: #795E26; }
-    body.light-mode .hljs-class { color: #267f99; }
-    body.light-mode .hljs-variable { color: #001080; }
-    body.light-mode .hljs-operator { color: #1a1a1a; }
-    body.light-mode .hljs-punctuation { color: #1a1a1a; }
-    body.light-mode .hljs-property { color: #001080; }
-    body.light-mode .hljs-builtin { color: #267f99; }
+    body.light-mode .hljs-function { color: #795E26; font-weight: bold;}
+    body.light-mode .hljs-class { color: #267f99; font-weight: bold;}
+    body.light-mode .hljs-variable { color: #001080; font-weight: bold;}
+    body.light-mode .hljs-operator { color: #1a1a1a; font-weight: bold;}
+    body.light-mode .hljs-punctuation { color: #1a1a1a; font-weight: bold;}
+    body.light-mode .hljs-property { color: #001080; font-weight: bold;}
+    body.light-mode .hljs-builtin { color: #267f99; font-weight: bold;}
 
     body.light-mode .empty {
       color: rgba(0, 0, 0, 0.5);

@@ -83,7 +83,7 @@ function ControlPanel({ user, token, onLogout }) {
 
         // Only emit if cursor position changed
         if (cursorStart !== lastCursorPosition.current.start ||
-            cursorEnd !== lastCursorPosition.current.end) {
+          cursorEnd !== lastCursorPosition.current.end) {
 
           lastCursorPosition.current = { start: cursorStart, end: cursorEnd };
 
@@ -271,7 +271,7 @@ function ControlPanel({ user, token, onLogout }) {
     <div className="control-panel">
       <header className="header">
         <div className="header-left">
-          <h1>OVERLAY CONTROL</h1>
+          <h1>Octonix solutions™️</h1>
           <span className="user-badge">{user.username.toUpperCase()}</span>
         </div>
         <div className="header-right">
@@ -353,7 +353,7 @@ function ControlPanel({ user, token, onLogout }) {
               {activePanels.length === 0 ? (
                 <div className="empty-state">
                   <h2>NO PANELS SELECTED</h2>
-                  <p>Select at least one panel above</p>
+                  <p>Select one or more button from code/text/image </p>
                 </div>
               ) : activePanels.length === 1 ? (
                 <div className="single-panel-container">
@@ -442,13 +442,25 @@ function ControlPanel({ user, token, onLogout }) {
                   className="editor-container"
                   direction="horizontal"
                   sizes={activePanels.map(() => 100 / activePanels.length)}
-                  minSize={100}
-                  gutterSize={10}
-                  gutterStyle={() => ({
-                    backgroundColor: '#000',
-                    cursor: 'col-resize'
-                  })}
+                  minSize={150}
+                  gutterSize={15}
+                  snapOffset={30}
+                  dragInterval={1}
+                  gutterAlign="center"
+                  onDragStart={() => console.log('🎯 Drag started!')}
+                  onDrag={(sizes) => console.log('🔄 Dragging... sizes:', sizes)}
+                  onDragEnd={(sizes) => console.log('✅ Drag ended! Final sizes:', sizes)}
+                  gutterStyle={() => {
+                    console.log('🎨 Gutter style applied');
+                    return {
+                      backgroundColor: '#000',
+                      cursor: 'col-resize',
+                      borderLeft: '1px solid #222',
+                      borderRight: '1px solid #222'
+                    };
+                  }}
                 >
+                  {console.log('📊 Active panels:', activePanels)}
                   {visiblePanels.text && (
                     <div className="editor-panel" key="text">
                       <div className="panel-header">

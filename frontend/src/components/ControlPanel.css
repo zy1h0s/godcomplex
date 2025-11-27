@@ -349,14 +349,62 @@
   background-repeat: no-repeat;
   background-position: 50%;
   flex-shrink: 0;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.gutter::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3px;
+  height: 40px;
+  background-color: #ffffff;
+  border-radius: 2px;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  /* CRITICAL: Allows drag to work */
+}
+
+.gutter:hover {
+  background-color: #333333;
+}
+
+.gutter:hover::before {
+  opacity: 1;
+  height: 60px;
+  background-color: #00ff00;
 }
 
 .gutter.gutter-horizontal {
   cursor: col-resize;
 }
 
+.gutter.gutter-horizontal::before {
+  width: 3px;
+  height: 40px;
+}
+
+.gutter.gutter-horizontal:hover::before {
+  width: 3px;
+  height: 60px;
+}
+
 .gutter.gutter-vertical {
   cursor: row-resize;
+}
+
+.gutter.gutter-vertical::before {
+  width: 40px;
+  height: 3px;
+}
+
+.gutter.gutter-vertical:hover::before {
+  width: 60px;
+  height: 3px;
 }
 
 .editor-panel,
@@ -366,7 +414,7 @@
   background: #ffffff;
   border: 2px solid #000000;
   overflow: hidden;
-  flex: 1;
+  /* flex: 1 removed - was preventing react-split from controlling widths */
 }
 
 .editor-panel {
@@ -484,7 +532,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .image-preview {
