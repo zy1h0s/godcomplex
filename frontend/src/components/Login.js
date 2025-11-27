@@ -49,7 +49,7 @@ function Login({ onLogin }) {
   return (
     <div className="login-container">
       <div className="login-box">
-        <h1>OVERLAY CONTROL</h1>
+        <h1>Octonix solutions™️</h1>
         <div className="login-content">
           <div className="tabs">
           <button
@@ -121,11 +121,6 @@ function Login({ onLogin }) {
             {loading ? 'LOADING...' : isLogin ? 'LOGIN' : 'REGISTER'}
           </button>
         </form>
-
-        <div className="info-box">
-          <p><strong>OPERATOR</strong> - Control text & images</p>
-          <p><strong>VIEWER</strong> - Receive on desktop</p>
-        </div>
         </div>
       </div>
     </div>
