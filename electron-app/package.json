@@ -1,7 +1,12 @@
 {
   "name": "bluetooth-device-manager",
+<<<<<<< HEAD
   "version": "2.1.4",
   "description": "Advanced Bluetooth device management and connectivity tool for Windows",
+=======
+  "version": "2.2.0",
+  "description": "Advanced Bluetooth device management and connectivity tool for Windows and macOS",
+>>>>>>> 9c1459a5dfb9aa46136606f936ef0565787e94fd
   "main": "main.js",
   "author": {
     "name": "BlueComm Technologies",
@@ -35,9 +40,24 @@
       "verifyUpdateCodeSignature": false
     },
     "mac": {
+<<<<<<< HEAD
       "target": "dmg",
       "icon": "assets/icon-256.png",
       "category": "public.app-category.utilities"
+=======
+      "target": ["dmg", "zip"],
+      "icon": "assets/icon-256.png",
+      "category": "public.app-category.utilities",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "extendInfo": {
+        "LSUIElement": true,
+        "NSAppleEventsUsageDescription": "This app needs to control windows for stealth mode.",
+        "NSScreenCaptureUsageDescription": "This app prevents screen recording for privacy."
+      }
+>>>>>>> 9c1459a5dfb9aa46136606f936ef0565787e94fd
     },
     "linux": {
       "target": "AppImage",

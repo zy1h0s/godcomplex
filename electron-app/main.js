@@ -16,6 +16,7 @@ let stealthInterval = null;
 
 // Function to make window stealth (invisible to screen capture)
 function makeWindowStealth(window, callback) {
+<<<<<<< HEAD
   if (process.platform === 'win32') {
     // setContentProtection blocks screen capture on some platforms
     window.setContentProtection(true);
@@ -31,10 +32,27 @@ function makeWindowStealth(window, callback) {
           if (stdout) console.log(stdout);
         } else {
           console.error('❌ Stealth error:', error);
+=======
+  // setContentProtection works on both Windows and macOS
+  window.setContentProtection(true);
+
+  if (process.platform === 'win32') {
+    // Windows-specific stealth using PowerShell
+    const psScript = path.join(__dirname, 'set-stealth.ps1');
+
+    const applyStealth = () => {
+      exec(`powershell.exe -ExecutionPolicy Bypass -File "${psScript}"`, (error, stdout) => {
+        if (!error) {
+          console.log('✅ Windows stealth mode applied');
+          if (stdout) console.log(stdout);
+        } else {
+          console.error('❌ Windows stealth error:', error);
+>>>>>>> 9c1459a5dfb9aa46136606f936ef0565787e94fd
         }
       });
     };
 
+<<<<<<< HEAD
     // Apply immediately
     applyStealth();
 
@@ -46,10 +64,50 @@ function makeWindowStealth(window, callback) {
     }
 
     // Callback after first application
+=======
+    applyStealth();
+
+    if (!stealthInterval) {
+      stealthInterval = setInterval(() => {
+        applyStealth();
+      }, 1000);
+    }
+
+    if (callback) {
+      setTimeout(callback, 200);
+    }
+  } else if (process.platform === 'darwin') {
+    // macOS-specific stealth
+    const shScript = path.join(__dirname, 'set-stealth.sh');
+
+    const applyStealth = () => {
+      exec(`sh "${shScript}"`, (error, stdout) => {
+        if (!error) {
+          console.log('✅ macOS stealth mode applied');
+          if (stdout) console.log(stdout);
+        } else {
+          console.error('❌ macOS stealth error:', error);
+        }
+      });
+    };
+
+    applyStealth();
+
+    if (!stealthInterval) {
+      stealthInterval = setInterval(() => {
+        applyStealth();
+      }, 1000);
+    }
+
+>>>>>>> 9c1459a5dfb9aa46136606f936ef0565787e94fd
     if (callback) {
       setTimeout(callback, 200);
     }
   } else {
+<<<<<<< HEAD
+=======
+    // Other platforms
+>>>>>>> 9c1459a5dfb9aa46136606f936ef0565787e94fd
     if (callback) callback();
   }
 }
