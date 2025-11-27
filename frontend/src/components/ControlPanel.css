@@ -584,145 +584,168 @@
     width: 100%;
     justify-content: center;
   }
-}/* Sidebar Toggle */
+}
+
+/* Sidebar Toggle */
 .sidebar {
-    transition: width 0.3s ease, transform 0.3s ease;
+  transition: width 0.3s ease, transform 0.3s ease;
 }
 
 .sidebar.collapsed {
-    width: 0;
-    transform: translateX(-100%);
-    border-right: none;
-    padding: 0;
-    overflow: hidden;
+  width: 0;
+  transform: translateX(-100%);
+  border-right: none;
+  padding: 0;
+  overflow: hidden;
 }
 
 .sidebar-toggle-btn {
-    position: absolute;
-    left: 20px;
-    top: 80px;
-    z-index: 100;
-    background: #000;
-    color: #fff;
-    border: 1px solid #fff;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.2s;
+  position: absolute;
+  left: 10px;
+  top: 75px;
+  /* Aligned with sidebar header */
+  z-index: 100;
+  background: #000;
+  color: #fff;
+  border: 1px solid #fff;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
 }
 
 .sidebar-toggle-btn:hover {
-    background: #fff;
-    color: #000;
-    border-color: #000;
+  background: #fff;
+  color: #000;
+  border-color: #000;
+}
+
+/* Sidebar Header Adjustment */
+.sidebar-header {
+  padding-left: 40px;
+  /* Make room for the toggle button */
+}
+
+/* Panel Controls Layout */
+.panel-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.panel-toggles {
+  display: flex;
+  gap: 10px;
 }
 
 /* Layout Direction Toggle */
 .layout-toggle-btn {
-    padding: 8px 16px;
-    background: #000000;
-    border: 2px solid #ffffff;
-    color: #ffffff;
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    margin-left: 10px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: #000000;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
 }
 
 .layout-toggle-btn:hover {
-    background: #ffffff;
-    color: #000000;
+  background: #ffffff;
+  color: #000000;
 }
 
 /* Vertical Layout */
 .editor-container.vertical {
-    flex-direction: column !important;
+  flex-direction: column !important;
 }
 
 /* Code Panel White Background */
 .code-panel {
-    background: #ffffff !important;
+  background: #ffffff !important;
 }
 
 .code-editor {
-    background-color: #ffffff !important;
+  background-color: #ffffff !important;
 }
 
 /* Image Panel Improvements */
 .image-panel {
-    position: relative;
-    overflow: hidden;
+  position: relative;
+  overflow: hidden;
 }
 
 .image-content {
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
 }
 
 .image-preview {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
 }
 
 .image-scroll-container {
-    flex: 1;
-    overflow: auto;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    background: #f0f0f0;
-    padding: 20px;
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: #f0f0f0;
+  padding: 20px;
 }
 
 .image-scroll-container img {
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .clear-image-btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    z-index: 10;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Header Alignment Fixes */
 .header {
-    height: 60px;
-    box-sizing: border-box;
+  height: 60px;
+  box-sizing: border-box;
 }
 
 .header-left,
 .header-right {
-    height: 100%;
+  height: 100%;
 }
 
 .session-info {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
 }
 
 .session-details {
-    align-items: flex-end;
+  align-items: flex-end;
 }
 
 /* Fix for main content area when sidebar is collapsed */
 .main-content {
-    position: relative;
+  position: relative;
 }

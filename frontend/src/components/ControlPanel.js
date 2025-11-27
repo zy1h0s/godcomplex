@@ -408,12 +408,14 @@ function ControlPanel({ user, token, onLogout }) {
                   >
                     IMAGE
                   </button>
+                </div>
+                <div className="layout-controls">
                   <button
                     className="layout-toggle-btn"
                     onClick={toggleLayoutDirection}
                     title={`Switch to ${layoutDirection === 'horizontal' ? 'vertical' : 'horizontal'} layout`}
                   >
-                    {layoutDirection === 'horizontal' ? '⬌ VERTICAL' : '⬍ HORIZONTAL'}
+                    {layoutDirection === 'horizontal' ? '⬍' : '⬌'}
                   </button>
                 </div>
               </div>
