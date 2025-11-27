@@ -447,13 +447,20 @@ function ControlPanel({ user, token, onLogout }) {
                   snapOffset={30}
                   dragInterval={1}
                   gutterAlign="center"
-                  gutterStyle={() => ({
-                    backgroundColor: '#000',
-                    cursor: 'col-resize',
-                    borderLeft: '1px solid #222',
-                    borderRight: '1px solid #222'
-                  })}
+                  onDragStart={() => console.log('🎯 Drag started!')}
+                  onDrag={(sizes) => console.log('🔄 Dragging... sizes:', sizes)}
+                  onDragEnd={(sizes) => console.log('✅ Drag ended! Final sizes:', sizes)}
+                  gutterStyle={() => {
+                    console.log('🎨 Gutter style applied');
+                    return {
+                      backgroundColor: '#000',
+                      cursor: 'col-resize',
+                      borderLeft: '1px solid #222',
+                      borderRight: '1px solid #222'
+                    };
+                  }}
                 >
+                  {console.log('📊 Active panels:', activePanels)}
                   {visiblePanels.text && (
                     <div className="editor-panel" key="text">
                       <div className="panel-header">
