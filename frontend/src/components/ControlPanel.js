@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -27,6 +28,10 @@ function ControlPanel({ user, token, onLogout }) {
     code: true,
     image: true
   });
+
+  // Sidebar and layout controls
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [layoutDirection, setLayoutDirection] = useState('horizontal'); // 'horizontal' or 'vertical'
 
   // Initialize Socket.IO
   useEffect(() => {
@@ -236,6 +241,45 @@ function ControlPanel({ user, token, onLogout }) {
     }
   };
 
+  const handlePaste = async (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        if (blob && currentSession) {
+          setUploadingImage(true);
+          try {
+            const formData = new FormData();
+            formData.append('image', blob);
+            formData.append('userId', user.id);
+
+            const response = await axios.post(
+              `${API_URL}/session/${currentSession.id}/upload-image`,
+              formData,
+              {
+                headers: {
+                  'Content-Type': 'multipart/form-data'
+                }
+              }
+            );
+
+            if (response.data.success) {
+              setImageUrl(response.data.imageUrl);
+            }
+          } catch (error) {
+            console.error('Failed to upload pasted image:', error);
+            alert('Failed to upload pasted image');
+          } finally {
+            setUploadingImage(false);
+          }
+        }
+        break;
+      }
+    }
+  };
+
   const clearImage = () => {
     setImageUrl('');
     if (socket && currentSession) {
@@ -259,6 +303,14 @@ function ControlPanel({ user, token, onLogout }) {
       ...prev,
       [panel]: !prev[panel]
     }));
+  };
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  const toggleLayoutDirection = () => {
+    setLayoutDirection(prev => prev === 'horizontal' ? 'vertical' : 'horizontal');
   };
 
   // Get active panels
@@ -294,8 +346,17 @@ function ControlPanel({ user, token, onLogout }) {
         </div>
       </header>
 
+      {/* Sidebar Toggle Button */}
+      <button
+        className="sidebar-toggle-btn"
+        onClick={toggleSidebar}
+        title={sidebarCollapsed ? "Show Sessions" : "Hide Sessions"}
+      >
+        {sidebarCollapsed ? '☰' : '✕'}
+      </button>
+
       <div className="main-content">
-        <aside className="sidebar">
+        <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
           <div className="sidebar-header">
             <h2>SESSIONS</h2>
             <button onClick={createSession} className="create-btn">NEW</button>
@@ -347,6 +408,13 @@ function ControlPanel({ user, token, onLogout }) {
                   >
                     IMAGE
                   </button>
+                  <button
+                    className="layout-toggle-btn"
+                    onClick={toggleLayoutDirection}
+                    title={`Switch to ${layoutDirection === 'horizontal' ? 'vertical' : 'horizontal'} layout`}
+                  >
+                    {layoutDirection === 'horizontal' ? '⬌ VERTICAL' : '⬍ HORIZONTAL'}
+                  </button>
                 </div>
               </div>
 
@@ -385,7 +453,7 @@ function ControlPanel({ user, token, onLogout }) {
                         className="code-editor"
                         style={{
                           fontSize: 14,
-                          backgroundColor: '#1e1e1e',
+                          backgroundColor: '#ffffff',
                           fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
                           minHeight: '100%'
                         }}
@@ -394,14 +462,16 @@ function ControlPanel({ user, token, onLogout }) {
                   )}
 
                   {visiblePanels.image && (
-                    <div className="image-panel" key="image">
+                    <div className="image-panel" key="image" onPaste={handlePaste} tabIndex="0">
                       <div className="panel-header">
                         <h3>IMAGE</h3>
                       </div>
                       <div className="image-content">
                         {imageUrl ? (
                           <div className="image-preview">
-                            <img src={imageUrl} alt="Overlay" />
+                            <div className="image-scroll-container">
+                              <img src={imageUrl} alt="Overlay" />
+                            </div>
                             <button onClick={clearImage} className="clear-image-btn">
                               CLEAR
                             </button>
@@ -426,7 +496,8 @@ function ControlPanel({ user, token, onLogout }) {
                                 </div>
                               ) : (
                                 <>
-                                  <p>UPLOAD</p>
+                                  <p>UPLOAD or PASTE (Ctrl+V)</p>
+                                  <span>Click to upload or paste image from clipboard</span>
                                 </>
                               )}
                             </div>
@@ -438,9 +509,9 @@ function ControlPanel({ user, token, onLogout }) {
                 </div>
               ) : (
                 <Split
-                  key={`horizontal-${activePanels.join('-')}`}
-                  className="editor-container"
-                  direction="horizontal"
+                  key={`split-${layoutDirection}-${activePanels.join('-')}`}
+                  className={`editor-container ${layoutDirection}`}
+                  direction={layoutDirection}
                   sizes={activePanels.map(() => 100 / activePanels.length)}
                   minSize={150}
                   gutterSize={15}
@@ -454,13 +525,14 @@ function ControlPanel({ user, token, onLogout }) {
                     console.log('🎨 Gutter style applied');
                     return {
                       backgroundColor: '#000',
-                      cursor: 'col-resize',
-                      borderLeft: '1px solid #222',
-                      borderRight: '1px solid #222'
+                      cursor: layoutDirection === 'horizontal' ? 'col-resize' : 'row-resize',
+                      borderLeft: layoutDirection === 'horizontal' ? '1px solid #222' : 'none',
+                      borderRight: layoutDirection === 'horizontal' ? '1px solid #222' : 'none',
+                      borderTop: layoutDirection === 'vertical' ? '1px solid #222' : 'none',
+                      borderBottom: layoutDirection === 'vertical' ? '1px solid #222' : 'none'
                     };
                   }}
                 >
-                  {console.log('📊 Active panels:', activePanels)}
                   {visiblePanels.text && (
                     <div className="editor-panel" key="text">
                       <div className="panel-header">
@@ -489,7 +561,7 @@ function ControlPanel({ user, token, onLogout }) {
                         className="code-editor"
                         style={{
                           fontSize: 14,
-                          backgroundColor: '#1e1e1e',
+                          backgroundColor: '#ffffff',
                           fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
                           minHeight: '100%'
                         }}
@@ -498,14 +570,16 @@ function ControlPanel({ user, token, onLogout }) {
                   )}
 
                   {visiblePanels.image && (
-                    <div className="image-panel" key="image">
+                    <div className="image-panel" key="image" onPaste={handlePaste} tabIndex="0">
                       <div className="panel-header">
                         <h3>IMAGE</h3>
                       </div>
                       <div className="image-content">
                         {imageUrl ? (
                           <div className="image-preview">
-                            <img src={imageUrl} alt="Overlay" />
+                            <div className="image-scroll-container">
+                              <img src={imageUrl} alt="Overlay" />
+                            </div>
                             <button onClick={clearImage} className="clear-image-btn">
                               CLEAR
                             </button>
@@ -530,7 +604,8 @@ function ControlPanel({ user, token, onLogout }) {
                                 </div>
                               ) : (
                                 <>
-                                  <p>UPLOAD</p>
+                                  <p>UPLOAD or PASTE (Ctrl+V)</p>
+                                  <span>Click to upload or paste image from clipboard</span>
                                 </>
                               )}
                             </div>
