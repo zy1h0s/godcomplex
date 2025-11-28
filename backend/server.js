@@ -9,6 +9,11 @@ const jwt = require('jsonwebtoken');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 
+// Import route handlers
+const adminRoutes = require('./routes/admin');
+const operatorRoutes = require('./routes/operator');
+const candidateRoutes = require('./routes/candidate');
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
@@ -23,10 +28,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Supabase Client
+// Supabase Client (Service Role for Backend)
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_KEY
 );
 
 // Cloudinary Configuration
@@ -57,61 +62,11 @@ const verifyToken = (token) => {
 
 // ==================== AUTH ENDPOINTS ====================
 
-// Register
+// Register (DISABLED - only admins can create users)
 app.post('/auth/register', async (req, res) => {
-  try {
-    const { username, password, email, role } = req.body;
-
-    if (!username || !password || !email) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    // Check if user exists
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('id')
-      .eq('username', username)
-      .single();
-
-    if (existingUser) {
-      return res.status(400).json({ error: 'Username already exists' });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const { data: user, error } = await supabase
-      .from('users')
-      .insert([
-        {
-          username,
-          email,
-          password: hashedPassword,
-          role: role || 'viewer'
-        }
-      ])
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    const token = generateToken(user.id);
-
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ error: 'Registration failed' });
-  }
+  return res.status(403).json({
+    error: 'Public registration is disabled. Contact an administrator.'
+  });
 });
 
 // Login
@@ -134,6 +89,11 @@ app.post('/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Check if active
+    if (!user.is_active) {
+      return res.status(403).json({ error: 'Account deactivated' });
+    }
+
     // Verify password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
@@ -142,6 +102,7 @@ app.post('/auth/login', async (req, res) => {
 
     const token = generateToken(user.id);
 
+    // Return user data based on user_type
     res.json({
       success: true,
       token,
@@ -149,7 +110,8 @@ app.post('/auth/login', async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
-        role: user.role
+        user_type: user.user_type || 'candidate', // New field
+        is_active: user.is_active
       }
     });
   } catch (error) {
@@ -157,6 +119,68 @@ app.post('/auth/login', async (req, res) => {
     res.status(500).json({ error: 'Login failed' });
   }
 });
+
+// Initialize first admin user (one-time use)
+// Once an admin exists, this endpoint will be disabled
+app.post('/auth/admin-init', async (req, res) => {
+  try {
+    // Check if any admin exists
+    const { data: existingAdmin } = await supabase
+      .from('users')
+      .select('id')
+      .eq('user_type', 'admin')
+      .single();
+
+    if (existingAdmin) {
+      return res.status(403).json({ error: 'Admin already exists. Use admin panel to create more admins.' });
+    }
+
+    const { username, password, email } = req.body;
+
+    if (!username || !password || !email) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create admin user
+    const { data: admin, error } = await supabase
+      .from('users')
+      .insert([
+        {
+          username,
+          email,
+          password: hashedPassword,
+          user_type: 'admin',
+          is_active: true
+        }
+      ])
+      .select('id, username, email, user_type')
+      .single();
+
+    if (error) throw error;
+
+    const token = generateToken(admin.id);
+
+    res.json({
+      success: true,
+      message: 'Admin user created successfully',
+      token,
+      user: admin
+    });
+  } catch (error) {
+    console.error('Admin init error:', error);
+    res.status(500).json({ error: 'Failed to create admin' });
+  }
+});
+
+// ==================== ROLE-BASED ROUTES ====================
+
+// Mount route handlers
+app.use('/admin', adminRoutes);
+app.use('/operator', operatorRoutes);
+app.use('/candidate', candidateRoutes);
 
 // ==================== SESSION ENDPOINTS ====================
 
