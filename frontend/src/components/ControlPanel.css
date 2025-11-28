@@ -820,62 +820,6 @@
 }
 
 /* Sidebar Header Adjustment */
-.sidebar-header {
-  padding-left: 50px;
-  /* Increased to 50px for more clearance */
-}
-
-/* Panel Controls Layout */
-.panel-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.panel-toggles {
-  display: flex;
-  gap: 10px;
-}
-
-/* Layout Direction Toggle */
-.layout-toggle-btn {
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  background: #000000;
-  border: 2px solid #ffffff;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.layout-toggle-btn:hover {
-  background: #ffffff;
-  color: #000000;
-}
-
-/* Vertical Layout */
-.editor-container.vertical {
-  flex-direction: column !important;
-}
-
-/* Single Panel Fix - Ensure it takes full space */
-.editor-container>div:only-child {
-  flex: 1 1 auto !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-}
-
-/* Code Panel White Background */
-.code-panel {
-  background: #ffffff !important;
-}
 
 .code-editor {
   background-color: #ffffff !important;
@@ -951,4 +895,77 @@
 /* Fix for main content area when sidebar is collapsed */
 .main-content {
   position: relative;
+}/* Sidebar Header Adjustment */
+.sidebar-header {
+  padding-left: 50px;
+}
+
+/* Panel Controls Layout */
+.panel-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.panel-toggles {
+  display: flex;
+  gap: 10px;
+}
+
+/* When sidebar is collapsed, add left margin to workspace to prevent overlap with toggle button */
+.sidebar.collapsed ~ .workspace {
+  margin-left: 50px;
+  transition: margin-left 0.3s ease;
+}
+
+.workspace {
+  transition: margin-left 0.3s ease;
+}
+
+/* Layout Direction Toggle */
+.layout-toggle-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: #000000;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.layout-toggle-btn:hover {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* Vertical Layout */
+.editor-container.vertical {
+  flex-direction: column !important;
+}
+
+/* Single Panel Fix - Ensure it takes full space */
+.single-panel-container {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.single-panel-container > .editor-panel,
+.single-panel-container > .image-panel {
+  flex: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+}
+
+/* Code Panel White Background */
+.code-panel {
+  background: #ffffff !important;
 }
