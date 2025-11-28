@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>God Complex - Admin Panel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen">
+            <div class="login-container">
+                <h1>ADMIN ACCESS</h1>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label>USERNAME</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>PASSWORD</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit">LOGIN</button>
+                    <div id="login-error" class="error-message"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div id="dashboard-screen" class="screen hidden">
+            <nav class="sidebar">
+                <div class="logo">GOD COMPLEX</div>
+                <div class="menu">
+                    <button class="menu-item active" data-view="dashboard">DASHBOARD</button>
+                    <button class="menu-item" data-view="operators">OPERATORS</button>
+                    <button class="menu-item" data-view="candidates">ALL CANDIDATES</button>
+                </div>
+                <div class="user-info">
+                    <span id="admin-username">Admin</span>
+                    <button id="logout-btn">LOGOUT</button>
+                </div>
+            </nav>
+
+            <main class="content">
+                <!-- Dashboard View -->
+                <div id="view-dashboard" class="view active">
+                    <h2>SYSTEM OVERVIEW</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>OPERATORS</h3>
+                            <div class="stat-value" id="stat-operators">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>CANDIDATES</h3>
+                            <div class="stat-value" id="stat-candidates">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>ACTIVE SESSIONS</h3>
+                            <div class="stat-value" id="stat-sessions">-</div>
+                        </div>
+                    </div>
+
+                    <div class="recent-activity">
+                        <h3>RECENT SESSIONS</h3>
+                        <div class="table-container">
+                            <table id="recent-sessions-table">
+                                <thead>
+                                    <tr>
+                                        <th>SESSION</th>
+                                        <th>OPERATOR</th>
+                                        <th>LAST ACTIVE</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operators View -->
+                <div id="view-operators" class="view">
+                    <div class="view-header">
+                        <h2>OPERATORS</h2>
+                        <button id="create-operator-btn" class="action-btn">+ NEW OPERATOR</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="operators-table">
+                            <thead>
+                                <tr>
+                                    <th>USERNAME</th>
+                                    <th>EMAIL</th>
+                                    <th>CANDIDATES</th>
+                                    <th>STATUS</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Candidates View -->
+                <div id="view-candidates" class="view">
+                    <div class="view-header">
+                        <h2>ALL CANDIDATES</h2>
+                        <input type="text" id="candidate-search" placeholder="Search candidates..."
+                            class="search-input">
+                    </div>
+                    <div class="table-container">
+                        <table id="candidates-table">
+                            <thead>
+                                <tr>
+                                    <th>USERNAME</th>
+                                    <th>OPERATOR</th>
+                                    <th>SESSION</th>
+                                    <th>STATUS</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modal -->
+        <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2 id="modal-title">Modal Title</h2>
+                <div id="modal-body">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -27,6 +27,7 @@ const io = socketIO(server, {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public')); // Serve static files (Admin Panel)
 
 // Supabase Client (Service Role for Backend)
 const supabase = createClient(
