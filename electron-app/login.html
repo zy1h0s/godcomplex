@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <title>Bluetooth Device Manager</title>
@@ -181,6 +182,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="login-container">
     <div class="titlebar">
@@ -190,45 +192,27 @@
 
     <div class="content">
       <div class="tabs">
-        <button class="tab active" onclick="switchTab('login')">LOGIN</button>
-        <button class="tab" onclick="switchTab('register')">REGISTER</button>
+        <button class="tab active" style="width: 100%; cursor: default;">LOGIN</button>
       </div>
 
-    <div id="error" class="error"></div>
-    <div id="success" class="success"></div>
+      <div id="error" class="error"></div>
+      <div id="success" class="success"></div>
 
-    <!-- Login Form -->
-    <form id="loginForm">
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" id="loginUsername" required>
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="loginPassword" required>
-      </div>
-      <div class="form-group">
-        <label>Session ID</label>
-        <input type="text" id="sessionId" placeholder="Enter session ID to join" required>
-      </div>
-        <button type="submit" class="btn" id="loginBtn">Connect</button>
-      </form>
-
-      <!-- Register Form -->
-      <form id="registerForm" class="hidden">
+      <!-- Login Form -->
+      <form id="loginForm">
         <div class="form-group">
           <label>Username</label>
-          <input type="text" id="regUsername" required>
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="regEmail" required>
+          <input type="text" id="loginUsername" required>
         </div>
         <div class="form-group">
           <label>Password</label>
-          <input type="password" id="regPassword" required>
+          <input type="password" id="loginPassword" required>
         </div>
-        <button type="submit" class="btn" id="registerBtn">Create Account</button>
+        <div class="form-group">
+          <label>Session ID</label>
+          <input type="text" id="sessionId" placeholder="Enter session ID to join" required>
+        </div>
+        <button type="submit" class="btn" id="loginBtn">Connect</button>
       </form>
     </div>
   </div>
@@ -239,30 +223,6 @@
     const axios = require('axios');
     const API_URL = process.env.API_URL || 'https://godcomplex.onrender.com';
 
-    let currentTab = 'login';
-
-    function switchTab(tab) {
-      currentTab = tab;
-      const loginForm = document.getElementById('loginForm');
-      const registerForm = document.getElementById('registerForm');
-      const tabs = document.querySelectorAll('.tab');
-
-      tabs.forEach(t => t.classList.remove('active'));
-
-      if (tab === 'login') {
-        loginForm.classList.remove('hidden');
-        registerForm.classList.add('hidden');
-        tabs[0].classList.add('active');
-      } else {
-        loginForm.classList.add('hidden');
-        registerForm.classList.remove('hidden');
-        tabs[1].classList.add('active');
-      }
-
-      hideError();
-      hideSuccess();
-    }
-
     function showError(message) {
       const errorDiv = document.getElementById('error');
       errorDiv.textContent = message;
@@ -271,16 +231,6 @@
 
     function hideError() {
       document.getElementById('error').style.display = 'none';
-    }
-
-    function showSuccess(message) {
-      const successDiv = document.getElementById('success');
-      successDiv.textContent = message;
-      successDiv.style.display = 'block';
-    }
-
-    function hideSuccess() {
-      document.getElementById('success').style.display = 'none';
     }
 
     // Login
@@ -323,38 +273,7 @@
         document.getElementById('loginBtn').disabled = false;
       }
     });
-
-    // Register
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('regUsername').value;
-      const email = document.getElementById('regEmail').value;
-      const password = document.getElementById('regPassword').value;
-
-      document.getElementById('registerBtn').disabled = true;
-      hideError();
-
-      try {
-        const response = await axios.post(`${API_URL}/auth/register`, {
-          username,
-          email,
-          password,
-          role: 'viewer'
-        });
-
-        if (response.data.success) {
-          showSuccess('Registration successful! Please login.');
-          setTimeout(() => {
-            switchTab('login');
-            document.getElementById('loginUsername').value = username;
-          }, 1500);
-        }
-      } catch (error) {
-        showError(error.response?.data?.error || 'Registration failed');
-      } finally {
-        document.getElementById('registerBtn').disabled = false;
-      }
-    });
   </script>
 </body>
+
 </html>

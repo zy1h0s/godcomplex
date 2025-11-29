@@ -29,12 +29,10 @@ function Login({ onLogin }) {
     setError('');
 
     try {
-      const endpoint = isLogin ? '/auth/login' : '/auth/register';
-      const payload = isLogin
-        ? { username: formData.username, password: formData.password }
-        : formData;
-
-      const response = await axios.post(`${API_URL}${endpoint}`, payload);
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        username: formData.username,
+        password: formData.password
+      });
 
       if (response.data.success) {
         onLogin(response.data.user, response.data.token);
@@ -52,75 +50,42 @@ function Login({ onLogin }) {
         <h1>Octonix solutions™️</h1>
         <div className="login-content">
           <div className="tabs">
-          <button
-            className={isLogin ? 'active' : ''}
-            onClick={() => setIsLogin(true)}
-          >
-            Login
-          </button>
-          <button
-            className={!isLogin ? 'active' : ''}
-            onClick={() => setIsLogin(false)}
-          >
-            Register
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Username</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              placeholder="Enter username"
-            />
+            <button className="active" style={{ width: '100%' }}>
+              Login
+            </button>
           </div>
 
-          {!isLogin && (
+          <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Email</label>
+              <label>Username</label>
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                name="username"
+                value={formData.username}
                 onChange={handleChange}
                 required
-                placeholder="Enter email"
+                placeholder="Enter username"
               />
             </div>
-          )}
 
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Enter password"
-            />
-          </div>
-
-          {!isLogin && (
             <div className="form-group">
-              <label>Role</label>
-              <select name="role" value={formData.role} onChange={handleChange}>
-                <option value="operator">Operator (Controller)</option>
-                <option value="viewer">Viewer (Receiver)</option>
-              </select>
+              <label>Password</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                placeholder="Enter password"
+              />
             </div>
-          )}
 
-          {error && <div className="error-message">{error}</div>}
+            {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? 'LOADING...' : isLogin ? 'LOGIN' : 'REGISTER'}
-          </button>
-        </form>
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? 'LOADING...' : 'LOGIN'}
+            </button>
+          </form>
         </div>
       </div>
     </div>
