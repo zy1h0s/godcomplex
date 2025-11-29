@@ -1,0 +1,333 @@
+.candidate-manager {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+}
+
+.candidate-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.candidate-section-header h2 {
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #fff;
+    margin: 0;
+}
+
+.manage-btn {
+    background: transparent;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 6px 12px;
+    font-size: 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+}
+
+.manage-btn:hover {
+    background: #fff;
+    color: #000;
+}
+
+.candidates-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.candidate-preview-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #fff;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-dot.active {
+    background: #00cc66;
+}
+
+.status-dot.inactive {
+    background: #ff4444;
+}
+
+.candidate-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.more-candidates,
+.no-candidates {
+    text-align: center;
+    padding: 8px;
+    font-size: 11px;
+    color: #888;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 8px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    color: #000;
+}
+
+/* Form Styles */
+.create-candidate-section {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.create-candidate-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.form-row input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+.form-row button {
+    padding: 10px 20px;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.form-row button:hover:not(:disabled) {
+    background: #333;
+}
+
+.form-row button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.create-candidate-section small {
+    display: block;
+    color: #666;
+    font-size: 11px;
+}
+
+/* Credentials Box */
+.credentials-box {
+    padding: 20px;
+    background: #f0fff4;
+    border: 1px solid #00cc66;
+    border-radius: 8px;
+    margin: 0 20px 20px 20px;
+}
+
+.credentials-box h4 {
+    margin: 0 0 15px 0;
+    color: #00cc66;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.credentials-info {
+    margin-bottom: 15px;
+}
+
+.credentials-info p {
+    margin: 8px 0;
+    font-size: 13px;
+}
+
+.credentials-info strong {
+    display: inline-block;
+    width: 90px;
+    color: #666;
+}
+
+.credentials-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.copy-btn {
+    background: #00cc66;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.copy-btn:hover {
+    background: #00aa55;
+}
+
+.dismiss-btn {
+    background: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dismiss-btn:hover {
+    background: #eee;
+}
+
+/* Candidates List */
+.candidates-list {
+    padding: 20px;
+}
+
+.candidates-list h3 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.candidates-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.candidates-list th,
+.candidates-list td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.candidates-list th {
+    font-size: 11px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.candidates-list td {
+    font-size: 13px;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.active {
+    background: #e6f7ee;
+    color: #00cc66;
+}
+
+.status-badge.inactive {
+    background: #ffe6e6;
+    color: #ff4444;
+}
+
+.action-btn {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 6px 12px;
+    margin-right: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.action-btn:hover {
+    background: #eee;
+}
+
+.action-btn.delete {
+    background: #ffe6e6;
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+.action-btn.delete:hover {
+    background: #ffcccc;
+}
