@@ -35,10 +35,7 @@
       "verifyUpdateCodeSignature": false
     },
     "mac": {
-      "target": "zip",
       "target": "dmg",
-      "icon": "assets/icon-256.png",
-      "category": "public.app-category.utilities"
       "icon": "assets/icon-256.png",
       "category": "public.app-category.utilities",
       "hardenedRuntime": false,
