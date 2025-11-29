@@ -798,16 +798,209 @@ function ControlPanel({ user, token, onLogout }) {
                           </button>
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  className = {`editor-container ${layoutDirection}`}
+                    direction={layoutDirection}
+                    sizes={activePanels.map(() => 100 / activePanels.length)}
+                    minSize={150}
+                    gutterSize={15}
+                    snapOffset={30}
+                    dragInterval={1}
+                    gutterAlign="center"
+                    onDragStart={() => console.log('🎯 Drag started!')}
+                    onDrag={(sizes) => console.log('🔄 Dragging... sizes:', sizes)}
+                    onDragEnd={(sizes) => console.log('✅ Drag ended! Final sizes:', sizes)}
+                    gutterStyle={() => {
+                      console.log('🎨 Gutter style applied');
+                      return {
+                        backgroundColor: '#000',
+                        cursor: layoutDirection === 'horizontal' ? 'col-resize' : 'row-resize',
+                        borderLeft: layoutDirection === 'horizontal' ? '1px solid #222' : 'none',
+                        borderRight: layoutDirection === 'horizontal' ? '1px solid #222' : 'none',
+                        borderTop: layoutDirection === 'vertical' ? '1px solid #222' : 'none',
+                        borderBottom: layoutDirection === 'vertical' ? '1px solid #222' : 'none'
+                      };
+                    }}
+                >
+                    {visiblePanels.text && (
+                      <div className="editor-panel" key="text">
+                        <div className="panel-header">
+                          <h3>TEXT</h3>
+                        </div>
+                        <textarea
+                          ref={textareaRef}
+                          className="text-editor"
+                          value={textContent}
+                          onChange={handleTextChange}
+                        />
+                      </div>
+                    )}
+
+                    {visiblePanels.code && (
+                      <div className="editor-panel code-panel" key="code">
+                        <div className="panel-header">
+                          <h3>CODE</h3>
+                        </div>
+                        <CodeEditor
+                          value={codeContent}
+                          language="js"
+                          placeholder=""
+                          onChange={handleCodeChange}
+                          padding={20}
+                          className="code-editor"
+                          style={{
+                            fontSize: 14,
+                            backgroundColor: '#ffffff',
+                            fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
+                            minHeight: '100%'
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {visiblePanels.image && (
+                      <div className="image-panel" key="image" onPaste={handlePaste} tabIndex="0">
+                        <div className="panel-header">
+                          <h3>IMAGE</h3>
+                        </div>
+                        <div className="image-content">
+                          {imageUrl ? (
+                            <div className="image-preview">
+                              <div className="image-scroll-container">
+                                <img src={imageUrl} alt="Overlay" />
+                              </div>
+                              <button onClick={clearImage} className="clear-image-btn">
+                                CLEAR
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="image-upload-area">
+                              <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleImageUpload}
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                              />
+                              <div
+                                className="upload-box"
+                                onClick={() => fileInputRef.current?.click()}
+                              >
+                                {uploadingImage ? (
+                                  <div className="uploading">
+                                    <div className="spinner"></div>
+                                    <p>UPLOADING</p>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <p>UPLOAD or PASTE (Ctrl+V)</p>
+                                    <span>Click to upload or paste image from clipboard</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </Split>
+              )}
+                </>
+          )}
               </div>
-            </div>
-          </div>
-        )}
-    </div>
-    </div >
-  );
+            </div >
+
+            {/* Candidate Management Modal */}
+            {showCandidatesModal && (
+              <div className="modal-overlay">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h2>Manage Candidates</h2>
+                    <button onClick={() => setShowCandidatesModal(false)} className="close-btn">×</button>
+                  </div>
+
+                  <div className="create-candidate-form">
+                    <h3>Create New Candidate</h3>
+                    <form onSubmit={createCandidate}>
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          placeholder="Username (optional)"
+                          value={newCandidate.username}
+                          onChange={e => setNewCandidate({ ...newCandidate, username: e.target.value })}
+                        />
+                        <input
+                          type="password"
+                          placeholder="Password (optional)"
+                          value={newCandidate.password}
+                          onChange={e => setNewCandidate({ ...newCandidate, password: e.target.value })}
+                        />
+                        <button type="submit">Create</button>
+                      </div>
+                      <small>Leave blank to auto-generate credentials</small>
+                    </form>
+                  </div>
+
+                  {createdCandidate && (
+                    <div className="credentials-box">
+                      <h4>Candidate Created!</h4>
+                      <p><strong>Username:</strong> {createdCandidate.username}</p>
+                      <p><strong>Password:</strong> {createdCandidate.plain_password}</p>
+                      <p><strong>Session:</strong> {createdCandidate.session_name}</p>
+                      <button onClick={() => {
+                        navigator.clipboard.writeText(
+                          `Username: ${createdCandidate.username}\nPassword: ${createdCandidate.plain_password}`
+                        );
+                        alert('Copied to clipboard!');
+                      }}>Copy Credentials</button>
+                      <button onClick={() => setCreatedCandidate(null)} className="dismiss-btn">Dismiss</button>
+                    </div>
+                  )}
+
+                  <div className="candidates-list-full">
+                    <h3>My Candidates ({candidates.length})</h3>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Username</th>
+                          <th>Session</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {candidates.map(c => (
+                          <tr key={c.mapping_id}>
+                            <td>{c.candidate.username}</td>
+                            <td>{c.session?.name || 'No Session'}</td>
+                            <td>
+                              <span className={`status-badge ${c.candidate.is_active ? 'active' : 'inactive'}`}>
+                                {c.candidate.is_active ? 'Active' : 'Inactive'}
+                              </span>
+                            </td>
+                            <td>
+                              <button
+                                onClick={() => toggleCandidateStatus(c.candidate.id, !c.candidate.is_active)}
+                                className="action-btn"
+                              >
+                                {c.candidate.is_active ? 'Deactivate' : 'Activate'}
+                              </button>
+                              <button
+                                onClick={() => deleteCandidate(c.candidate.id)}
+                                className="action-btn delete"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div >
+        );
 }
 
-export default ControlPanel;
+      export default ControlPanel;
