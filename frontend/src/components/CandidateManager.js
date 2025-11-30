@@ -92,24 +92,36 @@ function CandidateManager({ token, userType }) {
     return (
         <div className="candidate-manager">
             <div className="candidate-section-header">
-                <h2>MY CANDIDATES</h2>
+                <h2>SESSIONS</h2>
                 <button onClick={() => setShowModal(true)} className="manage-btn">
-                    MANAGE
+                    NEW
                 </button>
             </div>
 
             <div className="candidates-preview">
                 {candidates.slice(0, 5).map(c => (
                     <div key={c.mapping_id} className="candidate-preview-item">
-                        <span className={`status-dot ${c.candidate.is_active ? 'active' : 'inactive'}`}></span>
-                        <span className="candidate-name">{c.candidate.username}</span>
+                        <div className="preview-info">
+                            <span className={`status-dot ${c.candidate.is_active ? 'active' : 'inactive'}`}></span>
+                            <span className="candidate-name">{c.session?.name || c.candidate.username}</span>
+                        </div>
+                        <button
+                            className="mini-delete-btn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                deleteCandidate(c.candidate.id);
+                            }}
+                            title="Delete Session"
+                        >
+                            ×
+                        </button>
                     </div>
                 ))}
                 {candidates.length > 5 && (
                     <div className="more-candidates">+{candidates.length - 5} more</div>
                 )}
                 {candidates.length === 0 && (
-                    <div className="no-candidates">No candidates yet</div>
+                    <div className="no-candidates">No active sessions</div>
                 )}
             </div>
 
@@ -117,92 +129,85 @@ function CandidateManager({ token, userType }) {
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Manage Candidates</h2>
+                            <h2>New Session</h2>
                             <button onClick={() => setShowModal(false)} className="close-btn">×</button>
                         </div>
 
                         <div className="create-candidate-section">
-                            <h3>Create New Candidate</h3>
                             <form onSubmit={createCandidate}>
-                                <div className="form-row">
+                                <div className="form-group">
+                                    <label>Username (Optional)</label>
                                     <input
                                         type="text"
-                                        placeholder="Username (optional - auto-generated)"
+                                        placeholder="Auto-generated if empty"
                                         value={newCandidate.username}
                                         onChange={e => setNewCandidate({ ...newCandidate, username: e.target.value })}
                                     />
+                                </div>
+                                <div className="form-group">
+                                    <label>Password (Optional)</label>
                                     <input
                                         type="password"
-                                        placeholder="Password (optional - auto-generated)"
+                                        placeholder="Auto-generated if empty"
                                         value={newCandidate.password}
                                         onChange={e => setNewCandidate({ ...newCandidate, password: e.target.value })}
                                     />
-                                    <button type="submit" disabled={loading}>
-                                        {loading ? 'Creating...' : 'Create'}
-                                    </button>
                                 </div>
-                                <small>Leave blank to auto-generate credentials</small>
+                                <button type="submit" disabled={loading} className="create-submit-btn">
+                                    {loading ? 'Creating...' : 'Create Session'}
+                                </button>
                             </form>
                         </div>
 
                         {createdCandidate && (
                             <div className="credentials-box">
-                                <h4>✅ Candidate Created!</h4>
+                                <h4>✅ Session Created!</h4>
                                 <div className="credentials-info">
-                                    <p><strong>Username:</strong> {createdCandidate.username}</p>
-                                    <p><strong>Password:</strong> {createdCandidate.plain_password}</p>
-                                    <p><strong>Session:</strong> {createdCandidate.session_name}</p>
+                                    <div className="cred-row">
+                                        <span className="label">Username:</span>
+                                        <span className="value">{createdCandidate.username}</span>
+                                    </div>
+                                    <div className="cred-row">
+                                        <span className="label">Password:</span>
+                                        <span className="value">{createdCandidate.plain_password}</span>
+                                    </div>
+                                    <div className="cred-row">
+                                        <span className="label">Session ID:</span>
+                                        <span className="value">{createdCandidate.session_id}</span>
+                                    </div>
                                 </div>
                                 <div className="credentials-actions">
                                     <button onClick={copyCredentials} className="copy-btn">
-                                        Copy Credentials
+                                        Copy Details
                                     </button>
                                     <button onClick={() => setCreatedCandidate(null)} className="dismiss-btn">
-                                        Dismiss
+                                        Done
                                     </button>
                                 </div>
                             </div>
                         )}
 
                         <div className="candidates-list">
-                            <h3>My Candidates ({candidates.length})</h3>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Username</th>
-                                        <th>Session</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {candidates.map(c => (
-                                        <tr key={c.mapping_id}>
-                                            <td>{c.candidate.username}</td>
-                                            <td>{c.session?.name || 'No Session'}</td>
-                                            <td>
-                                                <span className={`status-badge ${c.candidate.is_active ? 'active' : 'inactive'}`}>
-                                                    {c.candidate.is_active ? 'Active' : 'Inactive'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <button
-                                                    onClick={() => toggleCandidateStatus(c.candidate.id, !c.candidate.is_active)}
-                                                    className="action-btn"
-                                                >
-                                                    {c.candidate.is_active ? 'Deactivate' : 'Activate'}
-                                                </button>
-                                                <button
-                                                    onClick={() => deleteCandidate(c.candidate.id)}
-                                                    className="action-btn delete"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <h3>Active Sessions ({candidates.length})</h3>
+                            <div className="session-list-container">
+                                {candidates.map(c => (
+                                    <div key={c.mapping_id} className="session-list-item">
+                                        <div className="session-info">
+                                            <span className="session-name">{c.session?.name || c.candidate.username}</span>
+                                            <span className="candidate-username">User: {c.candidate.username}</span>
+                                        </div>
+                                        <div className="session-actions">
+                                            <button
+                                                onClick={() => deleteCandidate(c.candidate.id)}
+                                                className="delete-icon-btn"
+                                                title="Delete Session"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

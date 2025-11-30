@@ -14,52 +14,67 @@
 .candidate-section-header h2 {
     font-size: 12px;
     letter-spacing: 1px;
-    color: #fff;
+    color: #888;
     margin: 0;
 }
 
 .manage-btn {
-    background: transparent;
-    color: #fff;
-    border: 1px solid #fff;
-    padding: 6px 12px;
-    font-size: 10px;
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 700;
     cursor: pointer;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     transition: all 0.2s;
+    border-radius: 2px;
 }
 
 .manage-btn:hover {
-    background: #fff;
-    color: #000;
+    background: #e0e0e0;
+    transform: translateY(-1px);
 }
 
 .candidates-preview {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
 }
 
 .candidate-preview-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.05);
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 13px;
     color: #fff;
+    transition: background 0.2s;
+}
+
+.candidate-preview-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.preview-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
 }
 
 .status-dot {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     flex-shrink: 0;
 }
 
 .status-dot.active {
-    background: #00cc66;
+    background: #00ff88;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
 }
 
 .status-dot.inactive {
@@ -67,18 +82,38 @@
 }
 
 .candidate-name {
-    flex: 1;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+}
+
+.mini-delete-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    opacity: 0;
+    transition: all 0.2s;
+}
+
+.candidate-preview-item:hover .mini-delete-btn {
+    opacity: 1;
+}
+
+.mini-delete-btn:hover {
+    color: #ff4444;
 }
 
 .more-candidates,
 .no-candidates {
     text-align: center;
-    padding: 8px;
-    font-size: 11px;
-    color: #888;
+    padding: 12px;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
 }
 
 /* Modal Styles */
@@ -88,7 +123,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -96,238 +132,262 @@
 }
 
 .modal-content {
-    background: #fff;
-    width: 90%;
-    max-width: 800px;
-    max-height: 90vh;
-    overflow-y: auto;
-    border-radius: 8px;
+    background: #1a1a1a;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 12px;
+    border: 1px solid #333;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #eee;
+    padding: 20px 24px;
+    border-bottom: 1px solid #333;
+    background: #222;
 }
 
 .modal-header h2 {
-    font-size: 18px;
+    font-size: 16px;
     margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    color: #fff;
+    letter-spacing: 0.5px;
 }
 
 .close-btn {
     background: none;
     border: none;
-    font-size: 28px;
+    font-size: 24px;
     cursor: pointer;
     color: #666;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transition: color 0.2s;
 }
 
 .close-btn:hover {
-    color: #000;
+    color: #fff;
 }
 
 /* Form Styles */
 .create-candidate-section {
-    padding: 20px;
-    border-bottom: 1px solid #eee;
+    padding: 24px;
+    background: #1a1a1a;
 }
 
-.create-candidate-section h3 {
-    margin: 0 0 15px 0;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+.form-group {
+    margin-bottom: 16px;
 }
 
-.form-row {
-    display: flex;
-    gap: 10px;
+.form-group label {
+    display: block;
+    font-size: 12px;
+    color: #888;
     margin-bottom: 8px;
+    font-weight: 500;
 }
 
-.form-row input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-family: inherit;
-}
-
-.form-row button {
-    padding: 10px 20px;
-    background: #000;
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 6px;
     color: #fff;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #fff;
+}
+
+.create-submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: #fff;
+    color: #000;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
     cursor: pointer;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    margin-top: 8px;
+    transition: background 0.2s;
 }
 
-.form-row button:hover:not(:disabled) {
-    background: #333;
+.create-submit-btn:hover:not(:disabled) {
+    background: #e0e0e0;
 }
 
-.form-row button:disabled {
+.create-submit-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.create-candidate-section small {
-    display: block;
-    color: #666;
-    font-size: 11px;
-}
-
 /* Credentials Box */
 .credentials-box {
+    margin: 0 24px 24px;
     padding: 20px;
-    background: #f0fff4;
-    border: 1px solid #00cc66;
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.2);
     border-radius: 8px;
-    margin: 0 20px 20px 20px;
 }
 
 .credentials-box h4 {
-    margin: 0 0 15px 0;
-    color: #00cc66;
+    margin: 0 0 16px 0;
+    color: #00ff88;
     font-size: 14px;
-    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .credentials-info {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
-.credentials-info p {
-    margin: 8px 0;
+.cred-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cred-row:last-child {
+    border-bottom: none;
+}
+
+.cred-row .label {
+    color: #888;
     font-size: 13px;
 }
 
-.credentials-info strong {
-    display: inline-block;
-    width: 90px;
-    color: #666;
+.cred-row .value {
+    color: #fff;
+    font-family: monospace;
+    font-size: 14px;
 }
 
 .credentials-actions {
     display: flex;
-    gap: 10px;
+    gap: 12px;
+}
+
+.copy-btn,
+.dismiss-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .copy-btn {
-    background: #00cc66;
-    color: #fff;
+    background: #00ff88;
+    color: #000;
     border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
 }
 
 .copy-btn:hover {
-    background: #00aa55;
+    background: #00cc66;
 }
 
 .dismiss-btn {
-    background: #f5f5f5;
-    color: #666;
-    border: 1px solid #ddd;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
+    background: transparent;
+    border: 1px solid #444;
+    color: #fff;
 }
 
 .dismiss-btn:hover {
-    background: #eee;
+    background: #333;
 }
 
-/* Candidates List */
+/* Session List */
 .candidates-list {
-    padding: 20px;
+    padding: 0 24px 24px;
 }
 
 .candidates-list h3 {
-    margin: 0 0 15px 0;
-    font-size: 14px;
+    font-size: 12px;
+    color: #666;
+    margin: 0 0 12px 0;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-.candidates-list table {
-    width: 100%;
-    border-collapse: collapse;
+.session-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
-.candidates-list th,
-.candidates-list td {
+.session-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 6px;
+    transition: all 0.2s;
 }
 
-.candidates-list th {
-    font-size: 11px;
-    font-weight: 600;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.session-list-item:hover {
+    border-color: #555;
+    background: #2a2a2a;
 }
 
-.candidates-list td {
-    font-size: 13px;
+.session-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
+.session-name {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
 }
 
-.status-badge.active {
-    background: #e6f7ee;
-    color: #00cc66;
+.candidate-username {
+    color: #888;
+    font-size: 12px;
 }
 
-.status-badge.inactive {
-    background: #ffe6e6;
-    color: #ff4444;
-}
-
-.action-btn {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    padding: 6px 12px;
-    margin-right: 6px;
-    border-radius: 4px;
+.delete-icon-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
     cursor: pointer;
-    font-size: 11px;
-    font-weight: 600;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    opacity: 0.6;
 }
 
-.action-btn:hover {
-    background: #eee;
-}
-
-.action-btn.delete {
-    background: #ffe6e6;
-    border-color: #ff4444;
-    color: #ff4444;
-}
-
-.action-btn.delete:hover {
-    background: #ffcccc;
+.delete-icon-btn:hover {
+    background: rgba(255, 68, 68, 0.1);
+    opacity: 1;
 }
