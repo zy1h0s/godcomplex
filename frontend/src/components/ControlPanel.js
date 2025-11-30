@@ -151,7 +151,15 @@ function ControlPanel({ user, token, onLogout }) {
 
   const loadSessions = async () => {
     try {
-      const response = await axios.get(`${API_URL}/sessions`);
+      let endpoint = `${API_URL}/sessions`;
+      const config = {};
+
+      if (user.user_type === 'operator') {
+        endpoint = `${API_URL}/operator/sessions`;
+        config.headers = { Authorization: `Bearer ${token}` };
+      }
+
+      const response = await axios.get(endpoint, config);
       if (response.data.success) {
         setSessions(response.data.sessions);
       }
@@ -432,7 +440,9 @@ function ControlPanel({ user, token, onLogout }) {
         <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
           <div className="sidebar-header">
             <h2>SESSIONS</h2>
-            <button onClick={createSession} className="create-btn">NEW</button>
+            {user.user_type !== 'operator' && (
+              <button onClick={createSession} className="create-btn">NEW</button>
+            )}
           </div>
           <div className="sessions-list">
             {sessions.map(session => (
@@ -472,10 +482,12 @@ function ControlPanel({ user, token, onLogout }) {
           {!currentSession ? (
             <div className="empty-state">
               <h2>NO SESSION SELECTED</h2>
-              <p>Create or select a session</p>
-              <button onClick={createSession} className="create-session-btn">
-                NEW SESSION
-              </button>
+              <p>Select a session from the sidebar</p>
+              {user.user_type !== 'operator' && (
+                <button onClick={createSession} className="create-session-btn">
+                  NEW SESSION
+                </button>
+              )}
             </div>
           ) : (
             <>
@@ -798,15 +810,15 @@ function ControlPanel({ user, token, onLogout }) {
                           </button>
                         </td>
                       </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
-          </div >
-        );
+            </div>
+          </div>
+        )}
+    </div >
+  );
 }
 
-      export default ControlPanel;
+export default ControlPanel;
